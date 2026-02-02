@@ -1,0 +1,53 @@
+﻿@page
+@model AP.Platform.Pages.SignupModel
+@{
+    Layout = null;
+}
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@using System.Web
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Sign up</title>
+</head>
+<body>
+    <h3>@Model.Message</h3>
+    <form method="post" action="/auth/sign-up">
+        <div>
+            <p>
+                <label class="nav-link text-dark display-6" asp-area=""
+                       for="email">Sign up with a new account</label>
+            </p>
+            @if (!string.IsNullOrEmpty(Model.Error))
+            {
+                <p>
+                    <label class="nav-link display-6" style="color:red;" asp-area=""
+                           for="email">Error: @Model.Error</label>
+                </p>
+            }
+            <p>
+                @Html.TextBox("email", Model.Email, new { type = "email", placeholder = "name@host.com" })
+            </p>
+            <p>
+                @Html.TextBox("fname", Model.FirstName, new { type = "text", placeholder = "first name" })
+            </p>
+            <p>
+                @Html.TextBox("lname", Model.LastName, new { type = "text", placeholder = "last name" })
+            </p>
+        </div>
+        <div>
+            <input type="submit" value="Sign-up" />
+        </div>
+    </form>
+    <div>
+        <p>
+            <label class="nav-link text-dark display-6" asp-area="" for="sign-in">Already have an account?</label>
+            <a id="sign-in" class="nav-link text-dark display-6" asp-area=""
+               href="/auth/login?email=@Model.Email?.Replace("+","%2B")">Sign in</a>
+        </p>
+    </div>
+
+</body>
+</html>

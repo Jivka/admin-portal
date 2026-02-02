@@ -1,0 +1,22 @@
+SELECT *
+  FROM [AP].[dbo].[Users]
+SELECT *
+  FROM [AP].[dbo].[Roles]
+SELECT *
+  FROM [AP].[dbo].[RefreshTokens]
+SELECT *
+  FROM [AP].[dbo].[UserEvents]
+SELECT *
+  FROM [AP].[dbo].[UserSessions]
+SELECT *
+  FROM [AP].[dbo].[Tenants]
+SELECT *
+  FROM [AP].[dbo].[UserTenants]
+SELECT *
+  FROM [AP].[dbo].[TenantContacts]
+SELECT *
+  FROM [AP].[dbo].[Contacts]
+ SELECT *
+  FROM [AP].[dbo].[TenantTypes]
+SELECT *
+  FROM [AP].[dbo].[TenantOwnerships]

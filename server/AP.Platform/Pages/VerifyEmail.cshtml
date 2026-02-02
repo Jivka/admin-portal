@@ -1,0 +1,72 @@
+﻿@page
+@model AP.Platform.Pages.VerifyEmailModel
+@{
+    Layout = null;
+}
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@using System.Web
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Verify email</title>
+</head>
+<body>
+    <h3>@Model.Message</h3>
+    <form method="post" action="/auth/verify-email">
+        <div>
+            @if (!string.IsNullOrEmpty(Model.Error))
+            {
+                <p>
+                    <label class="nav-link text-dark display-6" asp-area="" for="code">
+                        Confirm your new account. We have sent a code to <b>@Model.Email?.Replace("%2B", "+")</b>. Enter the code to confirm your account.
+                    </label>
+                </p>
+                <p>
+                    <label class="nav-link display-6" style="color:red;" asp-area=""
+                           for="email">Error: @Model.Error</label>
+                </p>
+            }
+            else
+            {
+                <p>
+                    <label class="nav-link text-dark display-6" asp-area="" for="code">
+                        Confirm your new account. We have sent a code to <b>@Model.Email?.Replace("%2B","+")</b>. Enter the code to confirm your account.
+                    </label>
+                </p>
+            }
+            <p>
+                <label class="nav-link text-dark display-6" asp-area="" for="code">verification code</label>
+                @Html.TextBox("code", Model.VerificationCode, new { type = "text", placeholder = "xxxxxx" })
+                @Html.Hidden("email", Model.Email?.Replace("+","%2B"))
+            </p>
+            <p>
+                @Html.TextBox("password", Model.Password, new { type = "password", placeholder = "password" })
+            </p>
+            <p>
+                @Html.TextBox("confirmPassword", Model.ConfirmPassword, new { type = "password", placeholder = "confirm password" })
+            </p>
+        </div>
+        <div>
+            <input type="submit" value="Confirm new account" />
+        </div>
+    </form>
+    <form method="post" action="/auth/resend-verification-code">
+        <div>
+            <p>
+                @Html.Hidden("email", Model.Email)
+                <label class="nav-link text-dark display-6" asp-area="" for="send">Didn't receive a code?</label>
+                <input id="send" type="submit" value="Send a new code" />
+            </p>
+        </div>
+    </form>
+    <div>
+        <p>
+            <label class="nav-link text-dark display-6" asp-area="" for="cancel">Go back?</label>
+            <a id="cancel" class="nav-link text-dark display-6" asp-area=""
+               href="/auth/login?email=@Model.Email?.Replace("+","%2B")&external=false">Cancel</a>
+        </p>
+    </div>
+</body>
+</html>

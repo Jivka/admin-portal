@@ -1,0 +1,46 @@
+﻿@page
+@model AP.Platform.Pages.IndexModel;
+@{
+    Layout = null;
+}
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+    <h3>@Model.Message</h3>
+    @if (User.Identity!.IsAuthenticated)
+    {
+        <h4> User Profile</h4>
+        <div>
+            <p>name: @Model.FullName</p>
+            <p>email: @Model.Email</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Error))
+        {
+            <h4> Error: @Model.Error</h4>
+        }
+
+        <ul class="navbar-nav flex-grow-1">
+            <li class="nav-item button">
+                <a class="nav-link text-dark display-6" asp-area=""
+                   href="/logout">Logout</a>
+            </li>
+        </ul>
+    }
+    else
+    {
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item button">
+                <a class="nav-link text-dark display-6" asp-area=""
+                   href="/login">Login to RE</a>
+            </li>
+        </ul>
+    }
+</body>
+</html>

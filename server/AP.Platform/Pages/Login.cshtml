@@ -1,0 +1,72 @@
+﻿@page
+@model AP.Platform.Pages.LoginModel
+@{
+    Layout = null;
+}
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@using System.Web
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Login</title>
+</head>
+<body>
+    <h3>@Model.Message</h3>
+    @if (!User.Identity!.IsAuthenticated)
+    {
+        <form method="post" action="/auth/internal">
+            <div>
+                <p>
+                    <label class="nav-link text-dark display-6" asp-area=""
+                           for="email">Sign in with your email and password</label>
+                </p>
+                @if (!string.IsNullOrEmpty(Model.Error))
+                {
+                    <p>
+                        <label class="nav-link display-6" style="color:red;" asp-area=""
+                                for="email">Error: @Model.Error</label>
+                        @if (Model.IsVerified is false)
+                        {
+                            <a class="nav-link text-dark display-6" asp-area=""
+                                href="/verifyemail?email=@Model.Email?.Replace("+","%2B")">Verify your email</a>
+                        }
+                    </p>
+                }
+                <p>
+                    @Html.TextBox("email", Model.Email, new { type = "email", placeholder = "name@host.com" })
+                </p>
+                <p>
+                    @Html.TextBox("password", Model.Password, new { type = "password", placeholder = "password" })
+                </p>
+                <p>
+                    <a class="nav-link text-dark display-6" asp-area=""
+                        href="/forgotpassword?email=@Model.Email?.Replace("+","%2B")">Forgot your password?</a>
+
+                    <input type="submit" value="Sign-in" />
+                </p>
+            </div>
+        </form>
+
+        <div>
+            <p>
+                <label class="nav-link text-dark display-6" asp-area="" for="sign-up">Need an account?</label>
+                <a id="sign-up" class="nav-link text-dark display-6" asp-area=""
+                    href="/signup?email=@Model.Email?.Replace("+","%2B")">Sign up</a>
+            </p>
+        </div>
+
+        <form method="post" action="/auth/social">
+            <div>
+                <br />
+            </div>
+            <div>
+                @Html.Hidden("idp", "Google")
+                <input type="submit" value="Sign-in with Google" />
+            </div>
+        </form>
+    }
+</body>
+</html>
+

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  	<ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <UserSecretsId>0eef0182-5295-4935-b31d-d612e1e15d44</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AP.Common\AP.Common.csproj" />
+    <ProjectReference Include="..\AP.Identity.Internal\AP.Identity.Internal.csproj" />
+  </ItemGroup>
+
+    <ItemGroup>
+	    <PackageReference Include="MicroElements.Swashbuckle.FluentValidation" />
+	    <PackageReference Include="Serilog.AspNetCore" />
+	    <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
+    </ItemGroup>
+
+	<ItemGroup>
+        <Folder Include="Logs\" />
+        <Folder Include="wwwroot\images\" />
+    </ItemGroup>
+
+</Project>

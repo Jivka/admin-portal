@@ -1,0 +1,181 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Source code
+*.cs text diff=csharp
+*.cshtml text
+*.csx text diff=csharp
+*.vb text
+*.vbhtml text
+*.xaml text
+*.xml text
+*.config text
+*.props text
+*.targets text
+*.nuspec text
+*.resx text
+*.ruleset text
+
+# Documentation
+*.md text
+*.markdown text diff=markdown
+*.txt text
+README text
+LICENSE text
+AUTHORS text
+CHANGELOG text
+
+# Scripts
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Serialization
+*.json text
+*.yaml text
+*.yml text
+*.toml text
+
+# Web assets
+*.htm text diff=html
+*.html text diff=html
+*.css text diff=css
+*.scss text
+*.sass text
+*.less text
+*.js text
+*.jsx text
+*.ts text
+*.tsx text
+*.coffee text
+*.vue text
+*.svg text
+
+# Configs
+.editorconfig text
+.gitattributes text
+.gitignore text
+.gitconfig text
+
+# Fixes syntax highlighting on GitHub to allow comments
+.vscode/*.json linguist-language=JSON-with-Comments
+
+# Docker
+Dockerfile text
+*.dockerignore text
+
+# Graphics
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.bmp binary
+*.webp binary
+
+# Fonts
+*.ttf binary
+*.eot binary
+*.woff binary
+*.woff2 binary
+
+# Archives
+*.7z binary
+*.gz binary
+*.tar binary
+*.zip binary
+*.rar binary
+
+# Executables
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.pdb binary
+
+# Documents
+*.pdf binary
+*.doc binary
+*.docx binary
+*.xls binary
+*.xlsx binary
+*.ppt binary
+*.pptx binary
+
+# Audio/Video
+*.mp3 binary
+*.mp4 binary
+*.avi binary
+*.mov binary
+*.wav binary
+
+# Database
+*.mdf binary
+*.ldf binary
+*.ndf binary
+*.db binary
+*.sqlite binary
+
+# Compiled Object files
+*.slo binary
+*.lo binary
+*.o binary
+*.obj binary
+
+# Compiled Dynamic libraries
+*.so binary
+*.dylib binary
+*.dll binary
+
+# Compiled Static libraries
+*.lai binary
+*.la binary
+*.a binary
+*.lib binary
+
+# NuGet packages
+*.nupkg binary
+*.snupkg binary
+
+# Certificate files
+*.pfx binary
+*.p12 binary
+*.cer binary
+*.crt binary
+*.key binary
+
+# Source Map files
+*.map binary
+
+# LFS - Large files (optional - uncomment if using Git LFS)
+# *.psd filter=lfs diff=lfs merge=lfs -text
+# *.ai filter=lfs diff=lfs merge=lfs -text
+# *.sketch filter=lfs diff=lfs merge=lfs -text
+
+# Visual Studio Solution files - preserve CRLF on Windows
+*.sln text eol=crlf merge=union
+
+# Visual Studio Project files - preserve CRLF
+*.csproj text eol=crlf merge=union
+*.vbproj text eol=crlf merge=union
+*.vcxproj text eol=crlf merge=union
+*.vcproj text eol=crlf merge=union
+*.dbproj text eol=crlf merge=union
+*.fsproj text eol=crlf merge=union
+
+# Package files
+package.json text eol=lf
+package-lock.json text eol=lf -diff
+pnpm-lock.yaml text eol=lf -diff
+yarn.lock text eol=lf -diff
+
+# Linguist overrides for statistics
+*.cshtml linguist-language=HTML
+*.razor linguist-language=HTML
+docs/* linguist-documentation
+examples/* linguist-documentation
+test/* linguist-documentation
+tests/* linguist-documentation
+*.Tests/* linguist-documentation
