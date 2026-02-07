@@ -74,9 +74,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<JwtCookieAuthenticationMiddleware>();
 app.UseAuthentication();
-
-app.UseMiddleware<JwtHeaderAuthenticationMiddleware>();
 
 // Swagger OAuth
 app.UseMiddleware<SwaggerAuthenticationMiddleware>();
@@ -101,9 +100,10 @@ app.UseAuthorization();
 app.UseSession();
 
 app.UseCors(options => options
-    .AllowAnyOrigin()
-    .AllowAnyHeader()
-    .AllowAnyMethod());
+.SetIsOriginAllowed(_ => true)
+.AllowAnyHeader()
+.AllowAnyMethod()
+.AllowCredentials());
 
 app.MapRazorPages();
 app.MapDefaultControllerRoute();

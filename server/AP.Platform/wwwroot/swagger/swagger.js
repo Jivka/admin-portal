@@ -18,34 +18,13 @@
         return auth && auth[1].size !== 0;
     };
 
-    // a hacky way to append authorization header - we are basically intercepting 
-    // all requests, if no authorization was attached while user did authorized himself,
-    // append token to request
+    // Ensure credentials (cookies) are sent with every request
     const ensureAuthorization = (swagger) => {
-        // retrieve bearer token from authorization
-        const getBearer = () => {
-            const auth = getAuthorization(swagger);
-            const def = auth[1]._root.entries.find(e => e[0] === 'Bearer');
-            if (!def)
-                return undefined;
-
-            const token = def[1]._root.entries.find(e => e[0] === 'value');
-            if (!token)
-                return undefined;
-
-            return token[1];
-        }
-
-        // override fetch function of Swagger to make sure
-        // that on every request of the client is authorized append auth-header
+        // override fetch function of Swagger to make sure cookies are included
         const fetch = swagger.fn.fetch;
         swagger.fn.fetch = (req) => {
-            if (!req.headers.Authorization && isAuthorized(swagger)) {
-                const bearer = getBearer();
-                if (bearer) {
-                    req.headers.Authorization = bearer;
-                }
-            }
+            // Ensure credentials are sent with requests to include cookies
+            req.credentials = 'include';
             return fetch(req);
         }
     };
@@ -210,22 +189,28 @@
 
                         let response = JSON.parse(xhr.responseText);
 
-                        let accessToken = response.jwtToken;
-
+                        // Get the JWT token from the cookie set by the server
+                        // The server now sets cookies, so we need to read from them
+                        // For Swagger, we'll need to set up authorization with a placeholder
+                        // since cookies are automatically sent with requests
+                        
                         let obj = {
                             "Bearer": {
                                 "name": "Bearer",
                                 "schema": {
                                     "type": "apiKey",
-                                    "description": "Please enter into field the word 'Bearer' following by space and JWT",
+                                    "description": "Authentication via cookies (automatically included)",
                                     "name": "Authorization",
                                     "in": "header"
                                 },
-                                value: "Bearer " + accessToken
+                                value: "Bearer (cookie-based)"
                             }
                         };
 
                         swagger.authActions.authorize(obj);
+                        
+                        // Reload the page to ensure cookies are properly set
+                        setTimeout(() => window.location.reload(), 500);
                     }
                     else {
                         alert('Error: ' + xhr.status + ' ' + xhr.statusText + ' ' + xhr.responseText);
@@ -235,6 +220,7 @@
 
             xhr.open("POST", "/identity/sign-in", true);
             xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.withCredentials = true;
 
             let json = JSON.stringify({ "Email": userName, "Password": password });
 
