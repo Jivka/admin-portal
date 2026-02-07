@@ -231,28 +231,6 @@ public class IdentityService(
         return ApiResult<SigninResponse>.SuccessWith(response);
     }
 
-    public async Task<ApiResult<string>> ChangePassword(ChangePasswordRequest model)
-    {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-        if (user is null || !user.IsVerified || !BCrypt.Net.BCrypt.Verify(model.CurrentPassword, user.PasswordHash))
-        {
-            return ApiResult<string>.Failure(InvalidCredentials);
-        }
-
-        if (model.NewPassword == model.CurrentPassword)
-        {
-            return ApiResult<string>.Failure(NewOldPasswordAreEqual);
-        }
-
-        user!.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
-        user.PasswordChanged = DateTime.UtcNow;
-
-        dbContext.Users.Update(user);
-        await dbContext.SaveChangesAsync();
-
-        return ApiResult<string>.SuccessWith(PasswordChangedSuccessfully);
-    }
-
     public async Task<ApiResult<string>> ForgotPassword(ForgotPasswordRequest model, string? origin)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(x => model.Email != null && x.Email == model.Email);

@@ -13,21 +13,16 @@ namespace AP.Identity.Internal.Controllers;
 
 [ApiController]
 [Route("api")]
-[Tags("[Tenant Admin] Tenant Users")]
+[Tags("[Tenant Admin] Tenants' Users")]
 [AuthorizeTenantAdministrator(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class TenantUsersController(
     ISystemService systemService,
-    ITenantsService tenantsService,
     ITenantUsersService tenantUsersService,
     ICurrentUser currentUser) : ControllerBase
 {
     [HttpGet("tenants/roles")]
     public async Task<List<RoleOutput>?> GetTenantRoles()
         => await systemService.GetTenantRoles();
-
-    [HttpGet("tenants/own")]
-    public async Task<ActionResult<List<TenantOutput>>> GetTenants()
-        => await tenantsService.GetTenants(currentUser.UserId);
 
     [HttpGet("tenants/users/{tenantId}")]
     public async Task<ActionResult<UsersResponse>> GetTenantUsers(int tenantId, int? page, int? size, string? name, string? sort)

@@ -8,9 +8,8 @@ using AP.Common.Data.Options;
 
 namespace AP.Common.Data.Identity;
 
-public class DataSeeder(DataContext context, IOptions<IdentitySettings> identitySettings) : IDataSeeder
+public class DataSeeder(DataContext dbContext, IOptions<IdentitySettings> identitySettings) : IDataSeeder
 {
-    private readonly DataContext dbContext = context;
     private readonly IdentitySettings identitySettings = identitySettings.Value;
 
     public void SeedData()
@@ -22,14 +21,13 @@ public class DataSeeder(DataContext context, IOptions<IdentitySettings> identity
                 SeedTenantTypes();
                 SeedTenantOwnerships();
 
-                var systemAdminUser = SeedAdminUser();
+                var systemAdminUserTenantId = SeedAdminUser();
+                identitySettings.SystemTenantId = systemAdminUserTenantId ?? default;
 
                 if (dbContext.ChangeTracker.HasChanges())
                 {
                     await dbContext.SaveChangesAsync();
                 }
-
-                identitySettings.SystemTenantId = systemAdminUser?.UserTenants?.FirstOrDefault()?.TenantId ?? default;
             })
         .GetAwaiter()
         .GetResult();
@@ -64,25 +62,29 @@ public class DataSeeder(DataContext context, IOptions<IdentitySettings> identity
         }
     }
 
-    private User? SeedAdminUser()
+    private int? SeedAdminUser()
     {
-        User? adminUser;
+        int? systemAdminUserTenantId;
 
         // seed db with 1 Admin user  
         if (!dbContext.Users.Any() || !dbContext.UserTenants.Any(ut => ut.RoleId == (byte)Roles.SystemAdmin))
         {
-            adminUser = GetAdminUser();
+            var adminUser = GetAdminUser();
             dbContext.Users.Add(adminUser);
+
+            systemAdminUserTenantId = adminUser?.UserTenants?.FirstOrDefault()?.TenantId;
+
+            // send verify-email email message
         }
         else
         {
-            adminUser = dbContext.Users
-                .Include(u => u.UserTenants)
-                .Where(u => u.UserTenants != null && u.UserTenants.Any(ut => ut.RoleId == (byte)Roles.SystemAdmin))
-                .FirstOrDefault();
+            systemAdminUserTenantId = dbContext.UserTenants
+                .AsNoTracking()
+                .FirstOrDefault(ut => ut.RoleId == (byte)Roles.SystemAdmin)?
+                .TenantId;
         }
 
-        return adminUser;
+        return systemAdminUserTenantId;
     }
 
     private static List<Role> GetRoles()

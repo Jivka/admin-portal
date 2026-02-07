@@ -11,6 +11,7 @@ public interface IUsersService
     Task<ApiResult<UserOutput>> GetUser(int userId);
     Task<ApiResult<UserOutput>> CreateUser(CreateUserRequest model, int currentUserId, string? origin);
     Task<ApiResult<UserOutput>> EditUser(EditUserRequest model, int currentUserId, string? origin);
+    Task<ApiResult<string>> ChangePassword(ChangePasswordRequest model);
     Task<ApiResult<UserOutput>> ActivateOrDeactivateUser(int userId, bool active);
     Task<ApiResult<string>> RevokeToken(RevokeTokenRequest model, string? ipAddress, int? currentUserId);
     Task<ApiResult<bool>> DeleteUser(int userId);

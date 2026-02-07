@@ -112,28 +112,6 @@ public class IdentityControllerTests
     }
 
     [Fact]
-    public async Task ChangePassword_ReturnsExpectedResult()
-    {
-        // Arrange
-        var model = new ChangePasswordRequest("test@example.com", "OldPassword*123", "NewPassword*123")
-        {
-            Email = "test@example.com",
-            CurrentPassword = "OldPassword*123",
-            NewPassword = "NewPassword*123"
-        };
-        var expectedResult = ApiResult<string>.SuccessWith(PasswordChangedSuccessfully);
-        _identityServiceMock.Setup(s => s.ChangePassword(It.IsAny<ChangePasswordRequest>())).ReturnsAsync(expectedResult);
-
-        // Act
-        var result = await _controller.ChangePassword(model);
-
-        // Assert
-        var actionResult = Assert.IsType<ActionResult<string>>(result, exactMatch: false);
-        var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-        Assert.Equal(PasswordChangedSuccessfully, okResult.Value);
-    }
-
-    [Fact]
     public async Task ForgotPassword_ReturnsExpectedResult()
     {
         // Arrange

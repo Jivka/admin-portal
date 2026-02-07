@@ -200,6 +200,36 @@ public class UsersService(
         return ApiResult<UserOutput>.SuccessWith(MapToDomainModel(user));
     }
 
+    public async Task<ApiResult<string>> ChangePassword(ChangePasswordRequest model)
+    {
+        if (model.NewPassword == model.CurrentPassword)
+        {
+            return ApiResult<string>.Failure(NewOldPasswordAreEqual);
+        }
+
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.UserId == model.UserId);
+        if (user is null)
+        {
+            return ApiResult<string>.Failure(InvalidUser.WithMessageArgs(model.UserId));
+        }
+        if (user.Email != model.Email)
+        {
+            return ApiResult<string>.Failure(InvalidEmail.WithMessageArgs(model.Email));
+        }
+        if ( !user.IsVerified || !BCrypt.Net.BCrypt.Verify(model.CurrentPassword, user.PasswordHash))
+        {
+            return ApiResult<string>.Failure(InvalidCredentials);
+        }
+
+        user!.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+        user.PasswordChanged = DateTime.UtcNow;
+
+        dbContext.Users.Update(user);
+        await dbContext.SaveChangesAsync();
+
+        return ApiResult<string>.SuccessWith(PasswordChangedSuccessfully);
+    }
+
     public async Task<ApiResult<UserOutput>> ActivateOrDeactivateUser(int userId, bool active)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(x => x.UserId == userId);

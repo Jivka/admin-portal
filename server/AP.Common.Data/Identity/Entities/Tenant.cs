@@ -49,6 +49,4 @@ public class Tenant
     public User? UpdatedByUser { get; set; }
 
     public List<TenantContact>? TenantContacts { get; set; } = [];
-
-    ////public List<User>? TenantUsers { get; set; } = [];
 }

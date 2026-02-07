@@ -155,14 +155,14 @@ public class TenantsService(DataContext dbContext, IMapper mapper) : ITenantsSer
         return ApiResult<TenantOutput>.SuccessWith(MapToDomainModel(tenant));
     }
 
-    public async Task<ApiResult<TenantContactsResponse>> EditTenantContacts(TenantContactsRequest model)
+    public async Task<ApiResult<TenantContactsResponse>> EditTenantContacts(int tenantId, TenantContactsRequest model)
     {
         var tenant = await dbContext.Tenants
             .Include(x => x.TenantContacts)!.ThenInclude(x => x.Contact)
-            .FirstOrDefaultAsync(t => t.TenantId == model.TenantId);
+            .FirstOrDefaultAsync(t => t.TenantId == tenantId);
         if (tenant == null)
         {
-            return ApiResult<TenantContactsResponse>.Failure(TenantNotFound.WithMessageArgs(model.TenantId));
+            return ApiResult<TenantContactsResponse>.Failure(TenantNotFound.WithMessageArgs(tenantId));
         }
 
         var contacts = new List<Contact>();
@@ -177,7 +177,7 @@ public class TenantsService(DataContext dbContext, IMapper mapper) : ITenantsSer
 
         var response = new TenantContactsResponse()
         {
-            TenantId = model.TenantId,
+            TenantId = tenantId,
             Contacts = tenant.TenantContacts?
                 .Where(tc => tc.Contact != null)
                 .Select(tc => new ContactOutput()
@@ -215,20 +215,21 @@ public class TenantsService(DataContext dbContext, IMapper mapper) : ITenantsSer
 
     public async Task<ApiResult<bool>> DeleteTenant(int tenantId, int currentUserId)
     {
-        var tenant = await dbContext.Tenants
-            ////.Include(t => t.Users)
-            .FirstOrDefaultAsync(t => t.TenantId == tenantId);
-
+        var tenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.TenantId == tenantId);
         if (tenant == null)
         {
             return ApiResult<bool>.Failure(TenantNotFound.WithMessageArgs(tenantId));
         }
 
+        var tenantUsers = await dbContext.UserTenants
+            .Where(ut => ut.TenantId == tenantId)
+            .Include(ut => ut.Tenant)
+            .ToListAsync();
         var errors = new List<ApiError>();
-        ////if (tenant.Users != null && tenant.Users.Count != 0)
-        ////{
-        ////    errors.Add(CannotDeleteTenantWithUsers.WithMessageArgs(tenant.TenantName, tenant.TenantId));
-        ////}
+        if (tenantUsers != null && tenantUsers.Count != 0)
+        {
+            errors.Add(CannotDeleteTenantWithUsers.WithMessageArgs(tenant.TenantName, tenant.TenantId));
+        }
 
         if (errors.Count != 0)
         {

@@ -76,7 +76,7 @@ public class User
 
     public bool OwnsRefreshToken(string refreshToken)
     {
-        return this.RefreshTokens?.Find(x => x.Token == refreshToken) != null;
+        return RefreshTokens?.Find(x => x.Token == refreshToken) != null;
     }
 
     public string FullName { get => FirstName + " " + LastName; }

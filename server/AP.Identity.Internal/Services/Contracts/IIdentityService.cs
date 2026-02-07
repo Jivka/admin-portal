@@ -11,7 +11,6 @@ public interface IIdentityService
     Task<ApiResult<UserOutput>> VerifyEmail(VerifyEmailRequest model);
     Task<ApiResult<SigninResponse>> SignIn(SigninRequest model, string? ipAddress);
     Task<ApiResult<SigninResponse>> RefreshToken(RefreshTokenRequest model, string? ipAddress);
-    Task<ApiResult<string>> ChangePassword(ChangePasswordRequest model);
     Task<ApiResult<string>> ForgotPassword(ForgotPasswordRequest model, string? origin);
     Task<ApiResult<string>> ResetPassword(ResetPasswordRequest model);
     Task SendPasswordResetEmail(User user, string? origin);

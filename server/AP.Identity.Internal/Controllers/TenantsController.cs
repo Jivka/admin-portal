@@ -21,8 +21,7 @@ public class TenantsController(
 {
     [HttpGet("tenants/all")]
     public async Task<ActionResult<List<TenantOutput>>> GetAllTenants()
-        => await WithSystemAdminAccess<List<TenantOutput>>(async ()
-            => await tenantsService.GetAllTenants());
+        => await WithSystemAdminAccess(tenantsService.GetAllTenants);
 
     [HttpGet("tenants")]
     public async Task<ActionResult<TenantsResponse>> GetTenants(int? page, int? size, string? name, string? sort)
@@ -44,19 +43,19 @@ public class TenantsController(
         => await WithSystemAdminAccess<TenantOutput>(async ()
             => await tenantsService.EditTenant(tenantId, model, currentUser.UserId));
 
-    [HttpPatch("tenants/contacts")]
-    public async Task<ActionResult<TenantContactsResponse>> EditTenantContacts(TenantContactsRequest model)
+    [HttpPatch("tenants/{tenantId}/contacts")]
+    public async Task<ActionResult<TenantContactsResponse>> EditTenantContacts(int tenantId, TenantContactsRequest model)
         => await WithSystemAdminAccess<TenantContactsResponse>(async ()
-            => await tenantsService.EditTenantContacts(model));
+            => await tenantsService.EditTenantContacts(tenantId, model));
 
-    [HttpPatch("tenants/{tenantId}")]
+    [HttpPatch("tenants/{tenantId}/status")]
     public async Task<ActionResult<TenantOutput>> ActivateDeactivateUser(int tenantId, [BindRequired] bool active)
         => await WithSystemAdminAccess<TenantOutput>(async ()
             => await tenantsService.ActivateOrDeactivateTenant(tenantId, active, currentUser.UserId));
 
     [HttpDelete("tenants/{tenantId}")]
-    public async Task<ActionResult> DeleteTenant(int tenantId)
-        => await WithSystemAdminAccess(async ()
+    public async Task<ActionResult<bool>> DeleteTenant(int tenantId)
+        => await WithSystemAdminAccess<bool>(async ()
             => await tenantsService.DeleteTenant(tenantId, currentUser.UserId));
 
     private async Task<ApiResult<TResult>> WithSystemAdminAccess<TResult>(Func<Task<ApiResult<TResult>>> action)

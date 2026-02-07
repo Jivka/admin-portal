@@ -52,14 +52,6 @@ public class IdentityController(IIdentityService identity) : ControllerBase
         return result;
     }
 
-    [HttpPut("change-password")]
-    public async Task<ActionResult<string>> ChangePassword(ChangePasswordRequest model)
-    {
-        var result = await identity.ChangePassword(model);
-
-        return result;
-    }
-
     [HttpPost("forgot-password")]
     public async Task<ActionResult<string>> ForgotPassword(ForgotPasswordRequest model)
     {

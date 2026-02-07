@@ -37,8 +37,8 @@ public class UsersController(
 
     [HttpGet("users/{userId}")]
     public async Task<ActionResult<UserOutput>> GetUser(int userId)
-    => await WithSystemAdminAccess<UserOutput>(async ()
-        => await usersService.GetUser(userId));
+        => await WithSystemAdminAccess<UserOutput>(async ()
+            => await usersService.GetUser(userId));
 
     [HttpPost("users")]
     public async Task<ActionResult<UserOutput>> CreateUser(CreateUserRequest model)

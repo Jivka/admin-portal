@@ -13,4 +13,6 @@ public interface ISystemService
     Task<ApiResult> IsCurrentUserSystemAdmin(ICurrentUser currentUser);
 
     Task<ApiResult> IsCurrentUserTenantAdmin(ICurrentUser currentUser, int tenantId);
+
+    Task<ApiResult> IsCurrentUserAuthorizedUser(ICurrentUser currentUser, int userId);
 }

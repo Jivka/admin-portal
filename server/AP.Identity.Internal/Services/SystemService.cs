@@ -1,14 +1,16 @@
-﻿using System.Text.Json;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using AP.Common.Data;
+﻿using AP.Common.Data;
+using AP.Common.Data.Identity.Entities;
 using AP.Common.Data.Identity.Enums;
 using AP.Common.Data.Options;
 using AP.Common.Models;
 using AP.Common.Services.Contracts;
 using AP.Identity.Internal.Models;
 using AP.Identity.Internal.Services.Contracts;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
+using System.Threading.Channels;
 using static AP.Common.Constants.Constants;
 using static AP.Identity.Internal.Constants.ApiErrorMessages;
 
@@ -29,11 +31,10 @@ public class SystemService : ISystemService
         // Initialize SystemTenantId only if not set (e.g., 0 or default)
         if (this.identitySettings.SystemTenantId == 0)
         {
-            var systemTenant = dbContext.UserTenants
+            this.identitySettings.SystemTenantId = dbContext.UserTenants
                 .AsNoTracking()
-                .FirstOrDefault(ut => ut.RoleId == (byte)Roles.SystemAdmin);
-
-            this.identitySettings.SystemTenantId = systemTenant?.TenantId ?? 0;
+                .FirstOrDefault(ut => ut.RoleId == (byte)Roles.SystemAdmin)?
+                .TenantId ?? 0;
         }
     }
 
@@ -44,7 +45,7 @@ public class SystemService : ISystemService
 
     public async Task<List<RoleOutput>?> GetTenantRoles()
     {
-        // select the 3 roles TenantAdmin, PowerUser, and EndUser from Roles
+        // select the 3 tenant roles: TenantAdmin, PowerUser, and EndUser from Roles
         return await dbContext.Roles
             .Where(role => role.RoleId == (byte)Roles.TenantAdmin ||
                            role.RoleId == (byte)Roles.PowerUser ||
@@ -116,6 +117,22 @@ public class SystemService : ISystemService
         if (dbCheck is null)
         {
             return ApiResult.Failure(TenantAccessDenied, tenantId, 3);
+        }
+
+        return ApiResult.Success;
+    }
+
+    public async Task<ApiResult> IsCurrentUserAuthorizedUser(ICurrentUser currentUser, int userId)
+    {
+        if (currentUser.UserId != userId)
+        {
+            return ApiResult.Failure(UserAccessDenied.WithMessageArgs(userId, 1));
+        }
+
+        // check in db if userId exists
+        if (!await dbContext.Users.AnyAsync(u => u.UserId == userId))
+        {
+            return ApiResult.Failure(UserNotFound, userId);
         }
 
         return ApiResult.Success;

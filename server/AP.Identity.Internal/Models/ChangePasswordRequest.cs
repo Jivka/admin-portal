@@ -12,8 +12,9 @@ public record ChangePasswordRequest
         WriteIndented = true,
     };
 
-    public ChangePasswordRequest(string email, string currentPassword, string newPassword)
+    public ChangePasswordRequest(int userId, string email, string currentPassword, string newPassword)
     {
+        UserId = userId;
         Email = email;
         CurrentPassword = currentPassword;
         NewPassword = newPassword;
@@ -28,6 +29,9 @@ public record ChangePasswordRequest
             throw new ValidationException(JsonSerializer.Serialize(apiErrors, options));
         }
     }
+
+    [Required]
+    public required int UserId { get; set; }
 
     [Required]
     [EmailAddress]
