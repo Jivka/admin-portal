@@ -11,7 +11,8 @@ The AP solution is a multi-tenant admin portal system that provides robust ident
 - **.NET 9.0** - Latest .NET framework
 - **ASP.NET Core Razor Pages** - Web UI framework
 - **Entity Framework Core** - ORM with SQL Server provider
-- **JWT Authentication** - Token-based authentication
+- **JWT Authentication** - Token-based authentication with cookie storage
+- **Cookie Authentication** - Secure HTTP-only cookies for web and API
 - **BCrypt.Net** - Password hashing
 - **AutoMapper** - Object-to-object mapping
 - **Serilog** - Structured logging
@@ -39,7 +40,8 @@ The AP solution is a multi-tenant admin portal system that provides robust ident
 - User authentication flows (Sign in, Sign up, Logout)
 - Password management (Forgot, Reset, Change)
 - Email verification
-- Swagger API documentation with authentication
+- Cookie-based authentication for web and API
+- Swagger API documentation with cookie authentication support
 
 ### 2. AP.Identity.Internal
 **Type**: Class Library  
@@ -54,12 +56,12 @@ The AP solution is a multi-tenant admin portal system that provides robust ident
   - `LoginController` - Login operations
 
 - **Services**: Business logic implementation
-  - `IdentityService` - Core identity operations
-  - `UsersService` - User CRUD and management
-  - `TenantsService` - Tenant operations
-  - `JwtService` - JWT token generation and validation
-  - `RefreshTokenService` - Token refresh logic
-  - `SystemService` - System-level operations
+- `IdentityService` - Core identity operations with cookie management
+- `UsersService` - User CRUD and management
+- `TenantsService` - Tenant operations
+- `JwtService` - JWT token generation and validation
+- `RefreshTokenService` - Token refresh logic
+- `SystemService` - System-level operations
 
 - **Processors**: Background/async operations
   - `UserEventProcessor` - User event handling
@@ -87,11 +89,11 @@ The AP solution is a multi-tenant admin portal system that provides robust ident
   - `CurrentToken` - Current token context
 
 - **Utilities**:
-  - **Middleware**: JWT authentication, Swagger auth, global exception handling
-  - **Attributes**: Authorization, validation (Password strength, Email domain)
-  - **Extensions**: Service collection, application builder, object, string, datetime, JSON
-  - **Converters**: JSON converters for enums and decimals
-  - **Helpers**: Pagination, ordering
+- **Middleware**: JWT cookie authentication, JWT header authentication, Swagger auth, global exception handling
+- **Attributes**: Authorization, validation (Password strength, Email domain)
+- **Extensions**: Service collection (with cookie and token authentication), application builder, object, string, datetime, JSON
+- **Converters**: JSON converters for enums and decimals
+- **Helpers**: Pagination, ordering
 
 - **Models**:
   - `ApiResult<T>` - Standardized API response wrapper
@@ -164,17 +166,20 @@ The AP solution is a multi-tenant admin portal system that provides robust ident
    ```
 
 2. **Identity Settings**:
-   Configure authentication settings:
-   ```json
-   "IdentitySettings": {
-     "Secret": "your-jwt-secret-key",
-     "EmailDomain": "@yourdomain.com",
-     "MinPasswordLength": 6,
-     "MaxPasswordLength": 16,
-     "JwtTokenTTE": 1,
-     "RefreshTokenTTE": 7
-   }
-   ```
+Configure authentication settings:
+```json
+"IdentitySettings": {
+  "Secret": "your-jwt-secret-key",
+  "EmailDomain": "@yourdomain.com",
+  "MinPasswordLength": 6,
+  "MaxPasswordLength": 16,
+  "JwtTokenTTE": 1,        // JWT access token expiration in days (also used for cookie expiration)
+  "RefreshTokenTTE": 7     // Refresh token expiration in days
+}
+```
+   
+**Note**: The `JwtTokenTTE` value determines how long the authentication cookie remains valid. 
+The `RefreshTokenTTE` determines the refresh token cookie expiration.
 
 3. **Email Settings**:
    Configure SMTP settings for email functionality:
@@ -235,9 +240,15 @@ AP.Identity.Internal.Tests
 ## Key Features
 
 ### Authentication & Authorization
-- JWT-based API authentication
-- Cookie-based web authentication
-- Refresh token mechanism
+- **Dual Authentication Support**:
+  - Cookie-based authentication (primary method for web and API)
+  - JWT Bearer token support (header-based for API clients)
+- **Secure Cookie Storage**:
+  - HTTP-only cookies for JWT tokens
+  - Separate cookies for access tokens and refresh tokens
+  - Secure and SameSite strict policies
+- Automatic token extraction from cookies for API requests
+- Refresh token mechanism with cookie rotation
 - Role-based access control (RBAC)
 - System admin and tenant admin roles
 
@@ -256,10 +267,12 @@ AP.Identity.Internal.Tests
 
 ### API Features
 - RESTful API design
-- Comprehensive Swagger documentation
+- Comprehensive Swagger documentation with cookie authentication
+- Custom Swagger UI with login interface
 - Standardized response format with `ApiResult<T>`
 - Global exception handling
 - Request/response logging with Serilog
+- Automatic credentials (cookies) inclusion in API requests
 
 ### Security
 - Password strength validation
@@ -268,6 +281,12 @@ AP.Identity.Internal.Tests
 - JWT token expiration and refresh
 - Token revocation
 - HTTPS enforcement
+- **Cookie Security**:
+  - HTTP-only cookies (prevents XSS attacks)
+  - Secure flag (HTTPS only)
+  - SameSite strict policy (prevents CSRF attacks)
+  - Separate cookies for access and refresh tokens
+  - Cookie-based token rotation on refresh
 
 ## Architecture Patterns
 
@@ -294,7 +313,17 @@ API documentation is available through Swagger UI when running the application i
 - Sensitive configuration values should be stored in User Secrets (development) or Azure Key Vault (production)
 - Update the JWT secret key before deploying to production
 - Configure CORS policies appropriately for your environment
+  - **Important**: CORS must allow credentials (`AllowCredentials()`) for cookie-based authentication to work
 - Review and adjust password policy settings
+- **Cookie Authentication**:
+  - Cookies are set with HTTP-only, Secure, and SameSite=Strict flags
+  - Access tokens stored in cookies expire based on `JwtTokenTTE` setting (default: 1 day)
+  - Refresh tokens stored in separate cookies expire based on `RefreshTokenTTE` setting (default: 7 days)
+  - Ensure HTTPS is enforced in production for secure cookie transmission
+- **Token Management**:
+  - JWT tokens are automatically extracted from cookies for API authentication
+  - Both header-based (Bearer token) and cookie-based authentication are supported
+  - Swagger UI uses cookie-based authentication after login
 
 ## Contributing
 
