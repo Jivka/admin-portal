@@ -1,4 +1,7 @@
-﻿(function () {
+(function () {
+    // Global flag stored on window to persist across DOM mutations
+    window._swaggerLoginState = window._swaggerLoginState || { isLoggedIn: false };
+
     const overrider = () => {
         const swagger = window.ui;
         if (!swagger) {
@@ -83,7 +86,11 @@
      */
     const showLoginUI = (swagger) => {
         //https://github.com/api-platform/core/blob/main/src/Bridge/Symfony/Bundle/Resources/public/init-swagger-ui.js#L6-L41
-        new MutationObserver(function (mutations, self) {
+        let observer = new MutationObserver(function (mutations, self) {
+            // Check global flag - if already logged in, don't show login UI
+            if (window._swaggerLoginState.isLoggedIn)
+                return;
+
             let rootDiv = document.querySelector("#swagger-ui > section > div.swagger-ui > div:nth-child(2)");
             if (rootDiv == null)
                 return;
@@ -114,7 +121,8 @@
             //Create UI di login
             createLoginUI(descriptionDiv);
 
-        }).observe(document, { childList: true, subtree: true });
+        });
+        observer.observe(document, { childList: true, subtree: true });
 
         /**
          * Create login ui elements
@@ -189,6 +197,19 @@
 
                         let response = JSON.parse(xhr.responseText);
 
+                        // Set the GLOBAL flag to prevent login UI from showing again
+                        // This persists across DOM mutations and schema reloads
+                        window._swaggerLoginState.isLoggedIn = true;
+
+                        // Remove the login div from DOM
+                        let loginDiv = document.querySelector("div.login");
+                        if (loginDiv) {
+                            loginDiv.remove();
+                        }
+
+                        // Disconnect the observer to prevent it from re-showing login UI
+                        observer.disconnect();
+
                         // Get the JWT token from the cookie set by the server
                         // The server now sets cookies, so we need to read from them
                         // For Swagger, we'll need to set up authorization with a placeholder
@@ -208,9 +229,6 @@
                         };
 
                         swagger.authActions.authorize(obj);
-                        
-                        // Reload the page to ensure cookies are properly set
-                        setTimeout(() => window.location.reload(), 500);
                     }
                     else {
                         alert('Error: ' + xhr.status + ' ' + xhr.statusText + ' ' + xhr.responseText);
