@@ -51,6 +51,8 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromSeconds(100);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  // Added
+    options.Cookie.SameSite = SameSiteMode.Strict;  // Added
 });
 
 builder.Services.AddSwaggerServices();
@@ -100,10 +102,10 @@ app.UseAuthorization();
 app.UseSession();
 
 app.UseCors(options => options
-.SetIsOriginAllowed(_ => true)
-.AllowAnyHeader()
-.AllowAnyMethod()
-.AllowCredentials());
+    .SetIsOriginAllowed(_ => true)
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowCredentials());
 
 app.MapRazorPages();
 app.MapDefaultControllerRoute();
