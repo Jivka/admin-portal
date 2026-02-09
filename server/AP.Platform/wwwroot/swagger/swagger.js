@@ -210,25 +210,27 @@
                         // Disconnect the observer to prevent it from re-showing login UI
                         observer.disconnect();
 
-                        // Get the JWT token from the cookie set by the server
-                        // The server now sets cookies, so we need to read from them
-                        // For Swagger, we'll need to set up authorization with a placeholder
-                        // since cookies are automatically sent with requests
+                        // Server now uses session-based authentication
+                        // SessionId cookie is automatically sent with all requests
+                        // The server retrieves JWT from session on each request
                         
                         let obj = {
                             "Bearer": {
                                 "name": "Bearer",
                                 "schema": {
                                     "type": "apiKey",
-                                    "description": "Authentication via cookies (automatically included)",
+                                    "description": "Authentication via SessionId cookie (automatically included)",
                                     "name": "Authorization",
                                     "in": "header"
                                 },
-                                value: "Bearer (cookie-based)"
+                                value: "Session-based (SessionId cookie)"
                             }
                         };
 
                         swagger.authActions.authorize(obj);
+                        
+                        // Add logout button
+                        addLogoutButton();
                     }
                     else {
                         alert('Error: ' + xhr.status + ' ' + xhr.statusText + ' ' + xhr.responseText);
@@ -243,6 +245,80 @@
             let json = JSON.stringify({ "Email": userName, "Password": password });
 
             xhr.send(json);
+        }
+        
+        /**
+         * Add logout button to Swagger UI
+         */
+        const addLogoutButton = function () {
+            // Wait a bit for Swagger UI to fully render
+            setTimeout(() => {
+                // Find the information container
+                let informationContainerDiv = document.querySelector("div.information-container.wrapper");
+                if (!informationContainerDiv)
+                    return;
+
+                let descriptionDiv = informationContainerDiv.querySelector("section > div > div > div.description");
+                if (!descriptionDiv)
+                    return;
+
+                // Check if logout button already exists
+                if (descriptionDiv.querySelector("div.logout-container"))
+                    return;
+
+                // Create logout container
+                let logoutDiv = document.createElement("div");
+                logoutDiv.className = "logout-container";
+                logoutDiv.style = "margin-top: 20px; padding: 10px; border-top: 1px solid #ccc;";
+
+                // Create logout button
+                let logoutButton = document.createElement("button");
+                logoutButton.type = "button";
+                logoutButton.classList.add("btn");
+                logoutButton.classList.add("auth");
+                logoutButton.classList.add("authorize");
+                logoutButton.classList.add("button");
+                logoutButton.innerText = "Logout";
+                logoutButton.style = "background-color: #f44336; color: white;";
+                
+                logoutButton.onclick = function () {
+                    logout();
+                };
+
+                logoutDiv.appendChild(logoutButton);
+                descriptionDiv.appendChild(logoutDiv);
+            }, 500);
+        }
+
+        /**
+         * Handle logout
+         */
+        const logout = function () {
+            let xhr = new XMLHttpRequest();
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == XMLHttpRequest.DONE) {
+                    if (xhr.status == 200) {
+                        // Reset login state
+                        window._swaggerLoginState.isLoggedIn = false;
+                        
+                        // Clear Swagger authorization
+                        swagger.authActions.logout();
+                        
+                        // Reload the page to show login UI again
+                        window.location.reload();
+                    }
+                    else {
+                        alert('Logout failed: ' + xhr.status + ' ' + xhr.statusText);
+                    }
+                }
+            };
+
+            xhr.open("POST", "/identity/logout", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.withCredentials = true;
+
+            xhr.send();
         }
     }
 

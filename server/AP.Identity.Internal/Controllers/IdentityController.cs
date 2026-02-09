@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using AP.Common.Services.Contracts;
 using AP.Identity.Internal.Models;
 using AP.Identity.Internal.Services.Contracts;
 
@@ -45,21 +46,27 @@ public class IdentityController(IIdentityService identity) : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    public async Task<ActionResult<SigninResponse>> RefreshToken()
+    public async Task<ActionResult<SigninResponse>> RefreshToken([FromServices] ISessionService sessionService)
     {
-        // Read refresh token from cookie
-        var refreshToken = HttpContext.Request.Cookies["RefreshToken"];
-        var email = User.Identity?.Name;
-
-        if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(email))
+        // Read session ID from cookie
+        var sessionIdCookie = HttpContext.Request.Cookies["SessionId"];
+        
+        if (string.IsNullOrEmpty(sessionIdCookie) || !long.TryParse(sessionIdCookie, out var sessionId))
         {
             return Unauthorized();
         }
 
-        var model = new RefreshTokenRequest(email, refreshToken)
+        // Get session from database
+        var session = await sessionService.GetSessionById(sessionId);
+        if (session == null || session.User == null)
         {
-            Email = email,
-            RefreshToken = refreshToken
+            return Unauthorized();
+        }
+
+        var model = new RefreshTokenRequest(session.User.Email ?? string.Empty, session.RefreshToken)
+        {
+            Email = session.User.Email ?? string.Empty,
+            RefreshToken = session.RefreshToken
         };
 
         var result = await identity.RefreshToken(model, IpAddress());
@@ -81,6 +88,24 @@ public class IdentityController(IIdentityService identity) : ControllerBase
         var result = await identity.ResetPassword(model);
 
         return result;
+    }
+
+    [HttpPost("logout")]
+    public async Task<ActionResult> Logout([FromServices] ISessionService sessionService)
+    {
+        // Read session ID from cookie
+        var sessionIdCookie = HttpContext.Request.Cookies["SessionId"];
+        
+        if (!string.IsNullOrEmpty(sessionIdCookie) && long.TryParse(sessionIdCookie, out var sessionId))
+        {
+            // Delete session from database
+            await sessionService.DeleteSession(sessionId);
+        }
+
+        // Clear session cookie
+        HttpContext.Response.Cookies.Delete("SessionId");
+
+        return Ok(new { message = "Logged out successfully" });
     }
 
     private string? IpAddress()

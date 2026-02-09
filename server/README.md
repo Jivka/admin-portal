@@ -240,17 +240,23 @@ AP.Identity.Internal.Tests
 ## Key Features
 
 ### Authentication & Authorization
-- **Dual Authentication Support**:
-  - Cookie-based authentication (primary method for web and API)
-  - JWT Bearer token support (header-based for API clients)
+- **Session-Based Authentication (Primary)**:
+  - All authenticated controllers read SessionId from cookie
+  - JWT access and refresh tokens retrieved from server-side session
+  - SessionAuthenticationMiddleware automatically handles token extraction
+  - Tokens never exposed to client - stored securely on server
+- **Fallback Authentication Support**:
+  - JWT Bearer token support via Authorization header (for API clients)
+  - Direct header-based authentication for programmatic access
 - **Secure Cookie Storage**:
-  - HTTP-only cookies for JWT tokens
-  - Separate cookies for access tokens and refresh tokens
-  - Secure and SameSite strict policies
-- Automatic token extraction from cookies for API requests
-- Refresh token mechanism with cookie rotation
+  - HTTP-only SessionId cookie (prevents XSS attacks)
+  - Secure flag enforced (HTTPS only)
+  - SameSite strict policy (prevents CSRF attacks)
+  - Session cookie expires based on RefreshTokenTTE setting
+- Automatic token extraction from session for all authenticated requests
+- Refresh token mechanism with automatic session rotation
 - Role-based access control (RBAC)
-- System admin and tenant admin roles
+- System admin and tenant admin authorization attributes
 
 ### User Management
 - Create, read, update, delete users
@@ -267,12 +273,13 @@ AP.Identity.Internal.Tests
 
 ### API Features
 - RESTful API design
-- Comprehensive Swagger documentation with cookie authentication
+- Session-based authentication with secure server-side token storage
+- Comprehensive Swagger documentation with session authentication
 - Custom Swagger UI with login interface
 - Standardized response format with `ApiResult<T>`
 - Global exception handling
 - Request/response logging with Serilog
-- Automatic credentials (cookies) inclusion in API requests
+- Automatic session credential handling for authenticated requests
 
 ### Security
 - Password strength validation
@@ -281,12 +288,18 @@ AP.Identity.Internal.Tests
 - JWT token expiration and refresh
 - Token revocation
 - HTTPS enforcement
-- **Cookie Security**:
-  - HTTP-only cookies (prevents XSS attacks)
-  - Secure flag (HTTPS only)
-  - SameSite strict policy (prevents CSRF attacks)
-  - Separate cookies for access and refresh tokens
-  - Cookie-based token rotation on refresh
+- **Session-Based Security**:
+  - SessionId stored in HTTP-only, Secure, SameSite=Strict cookie
+  - JWT tokens stored server-side in database (never exposed to client)
+  - Access tokens expire based on `JwtTokenTTE` setting (default: 1 day)
+  - Session cookie expires based on `RefreshTokenTTE` setting (default: 7 days)
+  - Automatic session cleanup for expired sessions
+  - Protected against XSS, CSRF, and token theft attacks
+- **Token Management**:
+  - JWT tokens automatically retrieved from session for API authentication
+  - SessionAuthenticationMiddleware handles token extraction transparently
+  - Both header-based (Bearer token) and session-based authentication supported
+  - Swagger UI uses session-based authentication after login
 
 ## Architecture Patterns
 
@@ -313,17 +326,21 @@ API documentation is available through Swagger UI when running the application i
 - Sensitive configuration values should be stored in User Secrets (development) or Azure Key Vault (production)
 - Update the JWT secret key before deploying to production
 - Configure CORS policies appropriately for your environment
-  - **Important**: CORS must allow credentials (`AllowCredentials()`) for cookie-based authentication to work
+  - **Important**: CORS must allow credentials (`AllowCredentials()`) for session-based authentication to work
 - Review and adjust password policy settings
-- **Cookie Authentication**:
-  - Cookies are set with HTTP-only, Secure, and SameSite=Strict flags
-  - Access tokens stored in cookies expire based on `JwtTokenTTE` setting (default: 1 day)
-  - Refresh tokens stored in separate cookies expire based on `RefreshTokenTTE` setting (default: 7 days)
+- **Session-Based Authentication**:
+  - Only SessionId cookie is sent to client (HTTP-only, Secure, SameSite=Strict flags)
+  - JWT access and refresh tokens stored server-side in `UserSessions` table
+  - Session cookie expires based on `RefreshTokenTTE` setting (default: 7 days)
+  - Access tokens expire based on `JwtTokenTTE` setting (default: 1 day)
   - Ensure HTTPS is enforced in production for secure cookie transmission
+  - Sessions can be invalidated server-side for immediate logout
 - **Token Management**:
-  - JWT tokens are automatically extracted from cookies for API authentication
-  - Both header-based (Bearer token) and cookie-based authentication are supported
-  - Swagger UI uses cookie-based authentication after login
+  - SessionAuthenticationMiddleware automatically extracts tokens from session
+  - Controllers don't need to handle session logic - it's transparent
+  - Both session-based (via cookie) and header-based (Bearer token) authentication supported
+  - Swagger UI uses session-based authentication after login
+  - All authenticated API controllers automatically work with session-based auth
 
 ## Contributing
 

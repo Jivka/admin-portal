@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using AP.Common.Data.Contracts;
@@ -80,13 +81,10 @@ public static class ServiceCollectionExtensions
 
         var key = Encoding.ASCII.GetBytes(secret);
 
+        // Don't set default schemes here - let the calling code decide
+        // This prevents conflicts when multiple authentication schemes are registered
         services
-            .AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, bearer =>
             {
                 bearer.RequireHttpsMetadata = false;
@@ -111,11 +109,16 @@ public static class ServiceCollectionExtensions
                 {
                     OnMessageReceived = context =>
                     {
-                        // Read token from cookie if not in header
-                        if (string.IsNullOrEmpty(context.Token))
-                        {
-                            context.Token = context.Request.Cookies[AuthenticationCookieName];
-                        }
+                        // SessionAuthenticationMiddleware adds the token to Authorization header
+                        // This event is called before the default token extraction happens
+                        // We don't need to do anything here - the default handler will read from the header
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        // Log authentication failures for debugging
+                        var logger = context.HttpContext.RequestServices.GetService<Microsoft.Extensions.Logging.ILogger<JwtBearerEvents>>();
+                        logger?.LogWarning("JWT Authentication failed: {Error}", context.Exception.Message);
                         return Task.CompletedTask;
                     },
                     OnChallenge = context =>
@@ -129,7 +132,7 @@ public static class ServiceCollectionExtensions
                             return context.Response.WriteAsJsonAsync(new
                             {
                                 error = "Unauthorized",
-                                message = "Authentication required"
+                                message = "Authentication required. Please login to obtain a session."
                             });
                         }
                         return Task.CompletedTask;
@@ -140,6 +143,8 @@ public static class ServiceCollectionExtensions
                 {
                     // Merge custom events if provided
                     var onMessageReceived = bearer.Events.OnMessageReceived;
+                    var onChallenge = bearer.Events.OnChallenge;
+                    
                     bearer.Events.OnMessageReceived = async context =>
                     {
                         await onMessageReceived(context);
@@ -148,6 +153,15 @@ public static class ServiceCollectionExtensions
                             await events.OnMessageReceived(context);
                         }
                     };
+                    
+                    if (events.OnChallenge != null)
+                    {
+                        bearer.Events.OnChallenge = async context =>
+                        {
+                            await onChallenge(context);
+                            await events.OnChallenge(context);
+                        };
+                    }
                 }
             });
 
@@ -156,6 +170,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentToken, CurrentToken>();
         services.AddScoped<JwtHeaderAuthenticationMiddleware, JwtHeaderAuthenticationMiddleware>();
         services.AddScoped<JwtCookieAuthenticationMiddleware, JwtCookieAuthenticationMiddleware>();
+        services.AddScoped<SessionAuthenticationMiddleware, SessionAuthenticationMiddleware>();
 
         return services;
     }
@@ -168,7 +183,7 @@ public static class ServiceCollectionExtensions
             options.EnableAnnotations();
             options.AddSecurityDefinition(BearerScheme, new OpenApiSecurityScheme
             {
-                Description = "Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
+                Description = "Session-based authentication using SessionId cookie. The JWT token is retrieved from the server-side session automatically. Login using the Swagger UI login form to authenticate.",
                 In = ParameterLocation.Header,
                 Name = "Authorization",
                 Type = SecuritySchemeType.ApiKey,

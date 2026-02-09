@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
+using AP.Common.Data.Identity.Entities;
 using AP.Common.Models;
+using AP.Common.Services.Contracts;
 using AP.Identity.Internal.Controllers;
 using AP.Identity.Internal.Models;
 using AP.Identity.Internal.Services.Contracts;
@@ -94,22 +96,43 @@ public class IdentityControllerTests
     public async Task RefreshToken_ReturnsExpectedResult()
     {
         // Arrange
+        var sessionServiceMock = new Mock<ISessionService>();
         var expectedResult = ApiResult<SigninResponse>.SuccessWith(new SigninResponse { Email = "test@example.com" });
         var model = new RefreshTokenRequest("test@example.com", "123456")
         {
             Email = "test@example.com",
             RefreshToken = "123456",
         };
+        
+        var userSession = new UserSession
+        {
+            SessionId = 1,
+            UserId = 1,
+            AccessToken = "access-token",
+            RefreshToken = "123456",
+            CreatedOn = DateTime.UtcNow,
+            CreatedFomIp = "127.0.0.1",
+            User = new User
+            {
+                UserId = 1,
+                Email = "test@example.com",
+                FirstName = "Test",
+                LastName = "User",
+                PasswordHash = "hash",
+                Active = true,
+                Enabled = true,
+                CreatedOn = DateTime.UtcNow
+            }
+        };
+        
+        sessionServiceMock.Setup(s => s.GetSessionById(It.IsAny<long>())).ReturnsAsync(userSession);
         _identityServiceMock.Setup(s => s.RefreshToken(It.IsAny<RefreshTokenRequest>(), It.IsAny<string>())).ReturnsAsync(expectedResult);
         
-        // Mock cookies and user identity
-        _controller.ControllerContext.HttpContext.Request.Headers.Cookie = "RefreshToken=123456";
-        var claims = new[] { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "test@example.com") };
-        var identity = new System.Security.Claims.ClaimsIdentity(claims);
-        _controller.ControllerContext.HttpContext.User = new System.Security.Claims.ClaimsPrincipal(identity);
+        // Mock session ID cookie
+        _controller.ControllerContext.HttpContext.Request.Headers.Cookie = "SessionId=1";
 
         // Act
-        var result = await _controller.RefreshToken();
+        var result = await _controller.RefreshToken(sessionServiceMock.Object);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<SigninResponse>>(result);
