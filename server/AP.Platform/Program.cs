@@ -24,7 +24,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(nameo
 // Add global services
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
-builder.Services.AddScoped<SwaggerAuthenticationMiddleware, SwaggerAuthenticationMiddleware>();
+////builder.Services.AddScoped<SwaggerAuthenticationMiddleware, SwaggerAuthenticationMiddleware>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddAutoMapperProfile(Assembly.GetExecutingAssembly());
 
@@ -78,7 +78,7 @@ app.UseMiddleware<JwtCookieAuthenticationMiddleware>();
 app.UseAuthentication();
 
 // Swagger OAuth
-app.UseMiddleware<SwaggerAuthenticationMiddleware>();
+////app.UseMiddleware<SwaggerAuthenticationMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
