@@ -54,25 +54,14 @@ public class LoginController(IIdentityService identityService, IHttpContextAcces
             return RedirectToPage(LoginPage, new { email, isVerified, error = GetErrorMessage(result) });
         }
 
-        if (result.Data.JwtToken is not null && result.Data.RefreshToken is not null)
-        {
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(result.Data.JwtToken);
-            var claimsIdentity = new ClaimsIdentity(token.Claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-
-            await httpContextAccessor.HttpContext!.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-
-            return RedirectToPage(
-                "/index",
-                new
-                {
-                    accessToken = result.Data.JwtToken,
-                    fullName = result.Data.FullName,
-                    email = result.Data.Email
-                });
-        }
-
-        return RedirectToPage(LoginPage, new { email });
+        // Authentication cookies are already set by IdentityService
+        return RedirectToPage(
+            "/index",
+            new
+            {
+                fullName = result.Data.FullName,
+                email = result.Data.Email
+            });
     }
 
     [HttpPost("social")]

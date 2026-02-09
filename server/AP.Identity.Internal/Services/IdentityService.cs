@@ -13,6 +13,7 @@ using AP.Identity.Internal.Services.Contracts;
 using static AP.Identity.Internal.Constants.ApiErrorMessages;
 using static AP.Identity.Internal.Constants.EventMessages;
 using static AP.Identity.Internal.Constants.NoticeMessages;
+using static AP.Common.Constants.Constants;
 
 namespace AP.Identity.Internal.Services;
 
@@ -23,7 +24,8 @@ public class IdentityService(
     IOptions<IdentitySettings> identitySettings,
     Channel<UserEventRequest> userEventChannel,
     Channel<SendEmailRequest> sendEmailChannel,
-    IMapper mapper) : IIdentityService
+    IMapper mapper,
+    IHttpContextAccessor httpContextAccessor) : IIdentityService
 {
     private readonly IdentitySettings identitySettings = identitySettings.Value;
 
@@ -158,8 +160,8 @@ public class IdentityService(
 
         var response = mapper.Map<SigninResponse>(MapToDomainModel(user));
 
-        response.JwtToken = jwtToken;
-        response.RefreshToken = refreshToken.Token;
+        // Set authentication cookies
+        SetAuthenticationCookies(jwtToken, refreshToken.Token);
 
         return ApiResult<SigninResponse>.SuccessWith(response);
     }
@@ -225,8 +227,8 @@ public class IdentityService(
 
         var response = mapper.Map<SigninResponse>(MapToDomainModel(user));
 
-        response.JwtToken = jwtToken;
-        response.RefreshToken = newRefreshToken.Token;
+        // Set authentication cookies
+        SetAuthenticationCookies(jwtToken, newRefreshToken.Token);
 
         return ApiResult<SigninResponse>.SuccessWith(response);
     }
@@ -328,6 +330,29 @@ public class IdentityService(
     }
 
     #region private methods
+
+    private void SetAuthenticationCookies(string jwtToken, string refreshToken)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(identitySettings.JwtTokenTTE)
+        };
+
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(AuthenticationCookieName, jwtToken, cookieOptions);
+
+        var refreshCookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(identitySettings.RefreshTokenTTE)
+        };
+
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(RefreshTokenCookieName, refreshToken, refreshCookieOptions);
+    }
 
     private string GenerateVerificationToken()
     {

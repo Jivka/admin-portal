@@ -45,8 +45,23 @@ public class IdentityController(IIdentityService identity) : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    public async Task<ActionResult<SigninResponse>> RefreshToken(RefreshTokenRequest model)
+    public async Task<ActionResult<SigninResponse>> RefreshToken()
     {
+        // Read refresh token from cookie
+        var refreshToken = HttpContext.Request.Cookies["RefreshToken"];
+        var email = User.Identity?.Name;
+
+        if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(email))
+        {
+            return Unauthorized();
+        }
+
+        var model = new RefreshTokenRequest(email, refreshToken)
+        {
+            Email = email,
+            RefreshToken = refreshToken
+        };
+
         var result = await identity.RefreshToken(model, IpAddress());
 
         return result;

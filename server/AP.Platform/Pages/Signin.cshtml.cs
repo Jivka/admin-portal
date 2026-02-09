@@ -17,13 +17,11 @@ public class SigninModel(IIdentityService identityService) : PageModel
 
     private async Task SigninUserInternal(string email, string password)
     {
-        var tokens = await identityService.SignIn(new SigninRequest(email, password)
+        // Cookies are now set by the IdentityService
+        await identityService.SignIn(new SigninRequest(email, password)
         {
             Email = email,
             Password = password
         }, Request.Headers.Origin);
-
-        var token = new JwtSecurityTokenHandler().ReadJwtToken(tokens.Data.JwtToken);
-        var identity = new ClaimsPrincipal(new ClaimsIdentity(token.Claims));
     }
 }

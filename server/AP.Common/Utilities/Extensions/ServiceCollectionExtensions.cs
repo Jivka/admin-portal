@@ -5,6 +5,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,7 +32,34 @@ public static class ServiceCollectionExtensions
             options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
         })
-        .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+        .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+        {
+            options.Events = new CookieAuthenticationEvents
+            {
+                OnRedirectToLogin = context =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                },
+                OnRedirectToAccessDenied = context =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                }
+            };
+        });
 
         return services;
     }
@@ -79,9 +107,47 @@ public static class ServiceCollectionExtensions
                     ClockSkew = TimeSpan.Zero
                 };
 
+                bearer.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        // Read token from cookie if not in header
+                        if (string.IsNullOrEmpty(context.Token))
+                        {
+                            context.Token = context.Request.Cookies[AuthenticationCookieName];
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = context =>
+                    {
+                        // Suppress redirect for API requests
+                        if (context.Request.Path.StartsWithSegments("/api"))
+                        {
+                            context.HandleResponse();
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.ContentType = "application/json";
+                            return context.Response.WriteAsJsonAsync(new
+                            {
+                                error = "Unauthorized",
+                                message = "Authentication required"
+                            });
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+
                 if (events != null)
                 {
-                    bearer.Events = events;
+                    // Merge custom events if provided
+                    var onMessageReceived = bearer.Events.OnMessageReceived;
+                    bearer.Events.OnMessageReceived = async context =>
+                    {
+                        await onMessageReceived(context);
+                        if (events.OnMessageReceived != null)
+                        {
+                            await events.OnMessageReceived(context);
+                        }
+                    };
                 }
             });
 
@@ -89,6 +155,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<ICurrentToken, CurrentToken>();
         services.AddScoped<JwtHeaderAuthenticationMiddleware, JwtHeaderAuthenticationMiddleware>();
+        services.AddScoped<JwtCookieAuthenticationMiddleware, JwtCookieAuthenticationMiddleware>();
 
         return services;
     }
@@ -132,7 +199,7 @@ public static class ServiceCollectionExtensions
             options.ExampleFilters();
             options.CustomSchemaIds(x => x.FullName);
         });
- 
+
         return services;
     }
 

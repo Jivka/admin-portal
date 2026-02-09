@@ -24,7 +24,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(nameo
 // Add global services
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
-builder.Services.AddScoped<SwaggerAuthenticationMiddleware, SwaggerAuthenticationMiddleware>();
+////builder.Services.AddScoped<SwaggerAuthenticationMiddleware, SwaggerAuthenticationMiddleware>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddAutoMapperProfile(Assembly.GetExecutingAssembly());
 
@@ -74,12 +74,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<JwtCookieAuthenticationMiddleware>();
 app.UseAuthentication();
 
-app.UseMiddleware<JwtHeaderAuthenticationMiddleware>();
-
 // Swagger OAuth
-app.UseMiddleware<SwaggerAuthenticationMiddleware>();
+////app.UseMiddleware<SwaggerAuthenticationMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -101,9 +100,10 @@ app.UseAuthorization();
 app.UseSession();
 
 app.UseCors(options => options
-    .AllowAnyOrigin()
-    .AllowAnyHeader()
-    .AllowAnyMethod());
+.SetIsOriginAllowed(_ => true)
+.AllowAnyHeader()
+.AllowAnyMethod()
+.AllowCredentials());
 
 app.MapRazorPages();
 app.MapDefaultControllerRoute();

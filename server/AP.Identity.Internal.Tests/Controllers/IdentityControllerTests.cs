@@ -94,16 +94,22 @@ public class IdentityControllerTests
     public async Task RefreshToken_ReturnsExpectedResult()
     {
         // Arrange
+        var expectedResult = ApiResult<SigninResponse>.SuccessWith(new SigninResponse { Email = "test@example.com" });
         var model = new RefreshTokenRequest("test@example.com", "123456")
         {
             Email = "test@example.com",
             RefreshToken = "123456",
         };
-        var expectedResult = ApiResult<SigninResponse>.SuccessWith(new SigninResponse { Email = "test@example.com" });
-        _identityServiceMock.Setup(s => s.RefreshToken(model, It.IsAny<string>())).ReturnsAsync(expectedResult);
+        _identityServiceMock.Setup(s => s.RefreshToken(It.IsAny<RefreshTokenRequest>(), It.IsAny<string>())).ReturnsAsync(expectedResult);
+        
+        // Mock cookies and user identity
+        _controller.ControllerContext.HttpContext.Request.Headers.Cookie = "RefreshToken=123456";
+        var claims = new[] { new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "test@example.com") };
+        var identity = new System.Security.Claims.ClaimsIdentity(claims);
+        _controller.ControllerContext.HttpContext.User = new System.Security.Claims.ClaimsPrincipal(identity);
 
         // Act
-        var result = await _controller.RefreshToken(model);
+        var result = await _controller.RefreshToken();
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<SigninResponse>>(result);

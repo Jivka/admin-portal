@@ -16,8 +16,6 @@ public record SigninResponse : IMapFrom<UserOutput>
     public bool Active { get; set; }
     public bool IsVerified { get; set; }
     public DateTime Created { get; set; }
-    public string? JwtToken { get; set; }
-    public string? RefreshToken { get; set; }
 
     public string? FullName => $"{FirstName} {LastName}";
 }
