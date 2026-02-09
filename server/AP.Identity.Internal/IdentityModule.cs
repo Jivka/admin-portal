@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AP.Common.Data.Options;
+using AP.Common.Services.Contracts;
 using AP.Common.Utilities.Extensions;
 using AP.Identity.Internal.Models;
 using AP.Identity.Internal.Services;
@@ -20,6 +21,7 @@ public static class IdentityModule
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<IUsersService, UsersService>();
         services.AddScoped<ITenantsService, TenantsService>();
         services.AddScoped<ITenantUsersService, TenantUsersService>();

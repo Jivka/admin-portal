@@ -7,6 +7,7 @@ public static class Constants
 {
     public const string AuthenticationCookieName = "Authentication";
     public const string RefreshTokenCookieName = "RefreshToken";
+    public const string SessionCookieName = "SessionId";
     public const string AuthorizationHeaderName = "Authorization";
     public const string AuthorizationHeaderValuePrefix = "Bearer";
     public const string BearerScheme = "Bearer";

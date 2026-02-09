@@ -29,7 +29,9 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddAutoMapperProfile(Assembly.GetExecutingAssembly());
 
 builder.Services.AddTokenAuthentication(builder.Configuration);
-builder.Services.AddCookieAuthentication();
+// Note: Cookie authentication is not needed for API endpoints
+// Session-based authentication uses JWT Bearer with SessionId cookie
+// builder.Services.AddCookieAuthentication();
 
 builder.Services.AddCors();
 builder.Services.AddRazorPages();
@@ -76,7 +78,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseMiddleware<JwtCookieAuthenticationMiddleware>();
+app.UseMiddleware<SessionAuthenticationMiddleware>();
 app.UseAuthentication();
 
 // Swagger OAuth

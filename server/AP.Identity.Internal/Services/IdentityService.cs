@@ -8,6 +8,7 @@ using AP.Common.Data;
 using AP.Common.Data.Identity.Entities;
 using AP.Common.Data.Options;
 using AP.Common.Models;
+using AP.Common.Services.Contracts;
 using AP.Identity.Internal.Models;
 using AP.Identity.Internal.Services.Contracts;
 using static AP.Identity.Internal.Constants.ApiErrorMessages;
@@ -21,6 +22,7 @@ public class IdentityService(
     DataContext dbContext,
     IJwtService jwtTokenGenerator,
     IRefreshTokenService refreshTokenService,
+    ISessionService sessionService,
     IOptions<IdentitySettings> identitySettings,
     Channel<UserEventRequest> userEventChannel,
     Channel<SendEmailRequest> sendEmailChannel,
@@ -160,8 +162,11 @@ public class IdentityService(
 
         var response = mapper.Map<SigninResponse>(MapToDomainModel(user));
 
-        // Set authentication cookies
-        SetAuthenticationCookies(jwtToken, refreshToken.Token);
+        // Create server-side session with tokens
+        var session = await sessionService.CreateSession(user.UserId, jwtToken, refreshToken.Token ?? string.Empty, ipAddress);
+
+        // Set session ID cookie (not the tokens themselves)
+        SetSessionCookie(session.SessionId);
 
         return ApiResult<SigninResponse>.SuccessWith(response);
     }
@@ -227,8 +232,18 @@ public class IdentityService(
 
         var response = mapper.Map<SigninResponse>(MapToDomainModel(user));
 
-        // Set authentication cookies
-        SetAuthenticationCookies(jwtToken, newRefreshToken.Token);
+        // Update server-side session with new tokens
+        var session = await sessionService.GetSessionByUserAndIp(user.UserId, ipAddress);
+        if (session != null)
+        {
+            await sessionService.UpdateSession(session, jwtToken, newRefreshToken.Token ?? string.Empty);
+        }
+        else
+        {
+            // Create new session if it doesn't exist
+            session = await sessionService.CreateSession(user.UserId, jwtToken, newRefreshToken.Token ?? string.Empty, ipAddress);
+            SetSessionCookie(session.SessionId);
+        }
 
         return ApiResult<SigninResponse>.SuccessWith(response);
     }
@@ -331,19 +346,9 @@ public class IdentityService(
 
     #region private methods
 
-    private void SetAuthenticationCookies(string jwtToken, string refreshToken)
+    private void SetSessionCookie(long sessionId)
     {
         var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddDays(identitySettings.JwtTokenTTE)
-        };
-
-        httpContextAccessor.HttpContext?.Response.Cookies.Append(AuthenticationCookieName, jwtToken, cookieOptions);
-
-        var refreshCookieOptions = new CookieOptions
         {
             HttpOnly = true,
             Secure = true,
@@ -351,7 +356,7 @@ public class IdentityService(
             Expires = DateTimeOffset.UtcNow.AddDays(identitySettings.RefreshTokenTTE)
         };
 
-        httpContextAccessor.HttpContext?.Response.Cookies.Append(RefreshTokenCookieName, refreshToken, refreshCookieOptions);
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(SessionCookieName, sessionId.ToString(), cookieOptions);
     }
 
     private string GenerateVerificationToken()
