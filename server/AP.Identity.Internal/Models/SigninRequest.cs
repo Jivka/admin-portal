@@ -33,6 +33,6 @@ public record SigninRequest
     public required string Email { get; set; }
 
     [Required]
-    [StringLength(16, MinimumLength=6)]
+    ////[StringLength(16, MinimumLength=6)]
     public required string Password { get; set; }
 }

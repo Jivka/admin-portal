@@ -27,8 +27,24 @@ export const signIn = createAsyncThunk(
       const response = await authApi.signIn(credentials);
       return response;
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      return rejectWithValue(err.response?.data?.message || err.message || 'Sign in failed');
+      const err = error as { 
+        response?: { 
+          data?: { 
+            'error-message'?: string;
+            'error-code'?: string;
+            error?: { message?: string }; 
+            message?: string 
+          } 
+        }; 
+        message?: string 
+      };
+      // Try hyphenated format first (error-message), then ApiResult format, then fallback
+      const errorMessage = err.response?.data?.['error-message']
+        || err.response?.data?.error?.message 
+        || err.response?.data?.message 
+        || err.message 
+        || 'Sign in failed';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -39,8 +55,22 @@ export const signOut = createAsyncThunk(
     try {
       await authApi.logout();
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      return rejectWithValue(err.response?.data?.message || err.message || 'Sign out failed');
+      const err = error as { 
+        response?: { 
+          data?: { 
+            'error-message'?: string;
+            error?: { message?: string }; 
+            message?: string 
+          } 
+        }; 
+        message?: string 
+      };
+      const errorMessage = err.response?.data?.['error-message']
+        || err.response?.data?.error?.message 
+        || err.response?.data?.message 
+        || err.message 
+        || 'Sign out failed';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -52,8 +82,22 @@ export const refreshToken = createAsyncThunk(
       const response = await authApi.refreshToken();
       return response;
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      return rejectWithValue(err.response?.data?.message || err.message || 'Token refresh failed');
+      const err = error as { 
+        response?: { 
+          data?: { 
+            'error-message'?: string;
+            error?: { message?: string }; 
+            message?: string 
+          } 
+        }; 
+        message?: string 
+      };
+      const errorMessage = err.response?.data?.['error-message']
+        || err.response?.data?.error?.message 
+        || err.response?.data?.message 
+        || err.message 
+        || 'Token refresh failed';
+      return rejectWithValue(errorMessage);
     }
   }
 );

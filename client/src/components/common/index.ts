@@ -1,3 +1,3 @@
-// Common components will be added here
-// Examples: Loading spinner, data tables, form components, dialogs, etc.
-export {};
+// Common components
+export { ErrorAlert } from './ErrorAlert';
+export { PasswordStrength } from './PasswordStrength';

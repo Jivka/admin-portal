@@ -34,8 +34,18 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    const requestUrl = originalRequest?.url ?? '';
+    const isAuthEndpoint =
+      requestUrl.includes('/identity/sign-in') ||
+      requestUrl.includes('/identity/refresh-token') ||
+      requestUrl.includes('/identity/sign-up') ||
+      requestUrl.includes('/identity/verify-email') ||
+      requestUrl.includes('/identity/forgot-password') ||
+      requestUrl.includes('/identity/reset-password') ||
+      requestUrl.includes('/identity/resend-verification-code');
+
     // If 401 and not already retrying, attempt token refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         // If already refreshing, queue this request
         return new Promise((resolve, reject) => {

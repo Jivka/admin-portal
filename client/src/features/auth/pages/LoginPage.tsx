@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, FormEvent } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import type { FormEvent } from 'react';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -12,25 +13,26 @@ import {
   Link,
   IconButton,
   InputAdornment,
-  CircularProgress,
   Alert,
   Stack,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { useAppDispatch } from '../../../store/hooks';
 import { signIn } from '../../../store/authSlice';
 import { STORAGE_KEYS } from '../../../utils/constants';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
-  const { isLoading, error } = useAppSelector((state) => state.auth);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [uiError, setUiError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
@@ -49,10 +51,15 @@ const LoginPage = () => {
     }
   }, []);
 
-  // Mirror Redux error to local uiError
+  // Handle success message from location state (e.g., after email verification or password reset)
   useEffect(() => {
-    setUiError(error);
-  }, [error]);
+    const state = location.state as { success?: string } | null;
+    if (state?.success) {
+      setSuccessMessage(state.success);
+      // Clear the state to prevent showing message on refresh
+      navigate('/login', { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   // Clear uiError when user edits email or password
   const handleEmailChange = (value: string) => {
@@ -77,6 +84,9 @@ const LoginPage = () => {
       setEmail(trimmedEmail);
     }
 
+    setIsLoading(true);
+    setUiError(null);
+
     try {
       await dispatch(signIn({ email: trimmedEmail, password })).unwrap();
 
@@ -89,10 +99,19 @@ const LoginPage = () => {
 
       // Navigate to dashboard with replace to prevent back to login
       navigate('/dashboard', { replace: true });
-    } catch (err) {
-      // On failure, clear only the password field
+    } catch (err: unknown) {
+      // On failure, unwrap() often throws the rejectWithValue payload (commonly a string)
+      const message =
+        typeof err === 'string'
+          ? err
+          : (err as { message?: string })?.message;
+
+      setUiError(message || 'Login failed. Please try again.');
+      
+      // Clear only the password field
       setPassword('');
-      // uiError is already set by the useEffect mirroring Redux error
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,9 +136,9 @@ const LoginPage = () => {
             </Typography>
           </Box>
 
-          {uiError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {uiError}
+          {successMessage && (
+            <Alert severity="success" onClose={() => setSuccessMessage(null)} sx={{ mb: 2 }}>
+              {successMessage}
             </Alert>
           )}
 
@@ -153,6 +172,16 @@ const LoginPage = () => {
                 disabled={isLoading}
                 required
                 fullWidth
+                error={Boolean(uiError)}
+                helperText={uiError ?? ' '}
+                FormHelperTextProps={{
+                  sx: {
+                    minHeight: 24,
+                    m: 0,
+                    mt: 0.5,
+                    lineHeight: 1.2,
+                  },
+                }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -169,16 +198,29 @@ const LoginPage = () => {
                 }}
               />
 
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    disabled={isLoading}
-                  />
-                }
-                label="Remember me"
-              />
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  mt: -1,
+                  mb: -0.5,
+                }}
+              >
+                <FormControlLabel
+                  sx={{ m: 0, my: -0.25 }}
+                  control={
+                    <Checkbox
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      disabled={isLoading}
+                      size="small"
+                      sx={{ p: 0.5 }}
+                    />
+                  }
+                  label={<Typography variant="body2">Remember me</Typography>}
+                />
+              </Box>
 
               <Button
                 type="submit"
@@ -188,22 +230,12 @@ const LoginPage = () => {
                 disabled={isLoading}
                 sx={{ mt: 1 }}
               >
-                {isLoading ? (
-                  <>
-                    <CircularProgress size={16} sx={{ mr: 1 }} color="inherit" />
-                    Logging in…
-                  </>
-                ) : (
-                  'Sign in'
-                )}
+                Sign in
               </Button>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 2 }}>
                 <Link component={RouterLink} to="/forgot-password" variant="body2">
                   Forgot password?
-                </Link>
-                <Link component={RouterLink} to="/signup" variant="body2">
-                  Create account
                 </Link>
               </Box>
             </Stack>
