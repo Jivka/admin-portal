@@ -13,6 +13,7 @@ import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage';
 // Protected pages
 import DashboardPage from '../features/dashboard/pages/DashboardPage';
 import ProfilePage from '../features/profile/pages/ProfilePage';
+import ChangePasswordPage from '../features/profile/pages/ChangePasswordPage';
 
 // System Admin pages
 import TenantsListPage from '../features/system-admin/tenants/pages/TenantsListPage';
@@ -72,6 +73,10 @@ export const router = createBrowserRouter([
       {
         path: 'profile',
         element: <ProfilePage />,
+      },
+      {
+        path: 'change-password',
+        element: <ChangePasswordPage />,
       },
 
       // System Admin routes

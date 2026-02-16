@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { FormEvent } from 'react';
-import { useBlocker, useBeforeUnload } from 'react-router-dom';
+import { useNavigate, useLocation, useBlocker, useBeforeUnload } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -25,6 +25,8 @@ import type { AxiosError } from 'axios';
 import type { UserOutput } from '../../../types';
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
 
@@ -44,6 +46,16 @@ const ProfilePage = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showEmailConfirmDialog, setShowEmailConfirmDialog] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+
+  // Handle success message from location state (e.g., from change password)
+  useEffect(() => {
+    const stateSuccess = (location.state as { success?: string })?.success;
+    if (stateSuccess) {
+      setSuccessMessage(stateSuccess);
+      // Clear location state to prevent showing message on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Fetch fresh profile data on mount
   useEffect(() => {
@@ -216,8 +228,7 @@ const ProfilePage = () => {
   };
 
   const handleChangePassword = () => {
-    // TODO: Implement change password functionality
-    console.log('Change password clicked');
+    navigate('/change-password');
   };
 
   if (!user || isLoadingProfile) {
