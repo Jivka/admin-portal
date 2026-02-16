@@ -1,6 +1,6 @@
 ---
 name: 'Error Handling Conventions'
-description: 'Frontend error handling conventions for React files'
+description: 'Frontend error handling conventions for React and TypeScript files.'
 applyTo: '**/*.tsx'
 ---
 
