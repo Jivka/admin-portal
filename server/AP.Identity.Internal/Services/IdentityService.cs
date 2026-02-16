@@ -140,7 +140,8 @@ public class IdentityService(
             {
                 TenantId = ut.TenantId ?? default,
                 RoleId = ut.RoleId,
-                RoleName = ut.RoleName
+                RoleName = ut.RoleName,
+                RoleDisplayName = ut.RoleDisplayName
             })
             .ToList();
 
@@ -223,7 +224,8 @@ public class IdentityService(
             {
                 TenantId = ut.TenantId ?? default,
                 RoleId = ut.RoleId,
-                RoleName = ut.RoleName
+                RoleName = ut.RoleName,
+                RoleDisplayName = ut.RoleDisplayName
             })
             .ToList();
 
@@ -454,7 +456,8 @@ public class IdentityService(
                 {
                     TenantId = ut.TenantId ?? default,
                     RoleId = ut.RoleId,
-                    RoleName = ut.RoleName
+                    RoleName = ut.RoleName,
+                    RoleDisplayName = ut.RoleDisplayName
                 })],
             Active = user.Active,
             IsVerified = user.IsVerified,

@@ -7,9 +7,10 @@ interface ErrorAlertProps {
 }
 
 interface ApiErrorResponse {
-  // Hyphenated format (error-message, error-code)
+  // Hyphenated format (error-message, error-code, error-details)
   'error-message'?: string;
   'error-code'?: string;
+  'error-details'?: string[];
   // Camel case format (error.message)
   error?: {
     code: string;
@@ -31,6 +32,32 @@ export const ErrorAlert = ({ error, onClose }: ErrorAlertProps) => {
 
   // Extract error data from axios error response
   const errorData = error.response?.data as ApiErrorResponse | undefined;
+
+  // Handle hyphenated format with error-details: { "error-details": [...], "error-message": "..." }
+  if (errorData?.['error-details'] && errorData['error-details'].length > 0) {
+    // If only one detail, display it directly
+    if (errorData['error-details'].length === 1) {
+      return (
+        <Alert severity="error" onClose={onClose} sx={{ mb: 2 }}>
+          {errorData['error-details'][0]}
+        </Alert>
+      );
+    }
+
+    // Multiple error details - display as list
+    return (
+      <Alert severity="error" onClose={onClose} sx={{ mb: 2 }}>
+        <AlertTitle>The following errors occurred:</AlertTitle>
+        <List dense sx={{ pt: 0 }}>
+          {errorData['error-details'].map((detail, index) => (
+            <ListItem key={index} sx={{ px: 0, py: 0.5 }}>
+              <ListItemText primary={detail} />
+            </ListItem>
+          ))}
+        </List>
+      </Alert>
+    );
+  }
 
   // Handle hyphenated format: { "error-message": "...", "error-code": "..." }
   if (errorData?.['error-message']) {

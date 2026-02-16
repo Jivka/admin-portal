@@ -5,4 +5,5 @@ public record TenantRole
     public int? TenantId { get; init; }
     public byte? RoleId { get; init; }
     public string? RoleName { get; init; }
+    public string? RoleDisplayName { get; init; }
 }

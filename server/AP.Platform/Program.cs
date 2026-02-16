@@ -100,14 +100,15 @@ app.UseSwaggerUI(options =>
 app.UseStaticFiles();
 app.UseCookiePolicy();
 app.UseRouting();
-app.UseAuthorization();
-app.UseSession();
 
 app.UseCors(options => options
     .SetIsOriginAllowed(_ => true)
     .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowCredentials());
+
+app.UseAuthorization();
+app.UseSession();
 
 app.MapRazorPages();
 app.MapDefaultControllerRoute();

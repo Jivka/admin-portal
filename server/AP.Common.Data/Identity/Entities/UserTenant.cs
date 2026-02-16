@@ -29,4 +29,6 @@ public class UserTenant
     public bool IsTenantAdministrator => RoleId == (byte)Roles.TenantAdmin;
 
     public string RoleName => Role?.RoleName != null ? Role.RoleName : string.Empty;
+
+    public string RoleDisplayName => Role?.RoleDisplayName != null ? Role.RoleDisplayName : string.Empty;
 }

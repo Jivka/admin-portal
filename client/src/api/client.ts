@@ -3,7 +3,7 @@ import type { InternalAxiosRequestConfig } from 'axios';
 
 // Create axios instance with credentials support for session cookies
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://localhost:5001',
+  baseURL: import.meta.env.VITE_API_URL || '', // Use empty string for proxy or fallback to env
   withCredentials: true, // Required for SessionId cookie
   headers: {
     'Content-Type': 'application/json',

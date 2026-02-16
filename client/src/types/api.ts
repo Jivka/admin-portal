@@ -1555,6 +1555,7 @@ export interface components {
             /** Format: int32 */
             roleId?: number | null;
             roleName?: string | null;
+            roleDisplayName?: string | null;
         };
         "AP.Identity.Internal.Models.ChangePasswordRequest": {
             /** Format: int32 */
