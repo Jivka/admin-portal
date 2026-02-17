@@ -25,7 +25,7 @@ public class TenantsService(DataContext dbContext, IMapper mapper) : ITenantsSer
     {
         // return the tenants for the currentUserId
         var tenants = await dbContext.UserTenants
-            .Include(ut => ut.Tenant)
+            .Include(ut => ut.Tenant).ThenInclude(x => x!.TenantContacts)!.ThenInclude(x => x.Contact)
             .Where(ut => ut.UserId == currentUserId)
             .Select(ut => new TenantOutput
             {
@@ -41,6 +41,22 @@ public class TenantsService(DataContext dbContext, IMapper mapper) : ITenantsSer
                 Enabled = ut.Tenant.Enabled,
                 CreatedOn = ut.Tenant.CreatedOn,
                 CreatedBy = ut.Tenant.CreatedBy,
+                Contacts = ut.Tenant.TenantContacts != null
+                    ? ut.Tenant.TenantContacts
+                        .Where(tc => tc.Contact != null)
+                        .Select(tc => new ContactOutput()
+                        {
+                            ContactId = tc.ContactId ?? default!,
+                            ContactName = tc.Contact != null ? tc.Contact.ContactName : default!,
+                            Email = tc.Contact != null ? tc.Contact.Email : null,
+                            Phone = tc.Contact != null ? tc.Contact.Phone : null,
+                            Title = tc.Contact != null ? tc.Contact.Title : null,
+                            Address = tc.Contact != null ? tc.Contact.Address : null,
+                            Active = tc.Active,
+                            Primary = tc.Primary,
+                            CreatedOn = tc.CreatedOn,
+                        }).ToList()
+                    : new List<ContactOutput>(),
             })
             .ToListAsync();
 
@@ -52,7 +68,7 @@ public class TenantsService(DataContext dbContext, IMapper mapper) : ITenantsSer
         var searchFilter = name != null ? name.Replace(" ", "") : string.Empty;
 
         var count = await dbContext.Tenants
-            .CountAsync(tenant => (name == null || (tenant.TenantName).Contains(searchFilter)));
+            .CountAsync(tenant => name == null || tenant.TenantName.Contains(searchFilter));
         Pager.Calculate(count, page, size,/* out int? pageNum, out int? pageSize,*/ out int skipRows, out int takeRows);
 
         var tenants = dbContext.Tenants
@@ -183,7 +199,7 @@ public class TenantsService(DataContext dbContext, IMapper mapper) : ITenantsSer
                 .Select(tc => new ContactOutput()
                 {
                     ContactId = tc.ContactId ?? default!,
-                    ContactName = tc.Contact?.ContactName ?? default!,
+                    ContactName = tc.Contact != null ? tc.Contact.ContactName : default!,
                     Email = tc.Contact?.Email,
                     Phone = tc.Contact?.Phone,
                     Title = tc.Contact?.Title,
@@ -482,20 +498,22 @@ public class TenantsService(DataContext dbContext, IMapper mapper) : ITenantsSer
             CreatedBy = tenant.CreatedBy,
             UpdatedOn = tenant.UpdatedOn,
             UpdatedBy = tenant.UpdatedBy,
-            Contacts = tenant.TenantContacts?
-                .Where(tc => tc.Contact != null)
-                .Select(tc => new ContactOutput()
-                {
-                    ContactId = tc.ContactId ?? default!,
-                    ContactName = tc.Contact?.ContactName ?? default!,
-                    Email = tc.Contact?.Email,
-                    Phone = tc.Contact?.Phone,
-                    Title = tc.Contact?.Title,
-                    Address = tc.Contact?.Address,
-                    Active = tc.Active,
-                    Primary = tc.Primary,
-                    CreatedOn = tc.CreatedOn,
-                }).ToList()
+            Contacts = tenant.TenantContacts != null
+                ? [.. tenant.TenantContacts
+                    .Where(tc => tc.Contact != null)
+                    .Select(tc => new ContactOutput()
+                    {
+                        ContactId = tc.ContactId ?? default!,
+                        ContactName = tc.Contact != null ? tc.Contact.ContactName : default!,
+                        Email = tc.Contact?.Email,
+                        Phone = tc.Contact?.Phone,
+                        Title = tc.Contact?.Title,
+                        Address = tc.Contact?.Address,
+                        Active = tc.Active,
+                        Primary = tc.Primary,
+                        CreatedOn = tc.CreatedOn,
+                    })]
+                : [],
         };
     }
 

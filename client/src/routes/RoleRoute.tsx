@@ -10,7 +10,7 @@ interface RoleRouteProps {
 
 /**
  * RoleRoute - Protects routes based on user role
- * Checks if user's roleId is in the allowedRoleIds array
+ * Checks if user has any role in the allowedRoleIds array
  * 
  * Role IDs (fetched from /api/roles at runtime):
  * - 1: System Admin
@@ -18,7 +18,7 @@ interface RoleRouteProps {
  * - 3: Power User
  * - 4: End User
  * 
- * Also checks tenantRoles for users with multiple tenant assignments
+ * Checks user's tenantRoles array for role assignments
  */
 export const RoleRoute = ({ 
   children, 
@@ -32,15 +32,17 @@ export const RoleRoute = ({
     return <Navigate to="/login" replace />;
   }
 
-  // Check if user's roleId is in allowed roles
-  const userRoleId = user.roleId;
-  const hasDirectRole = userRoleId !== undefined && allowedRoleIds.includes(userRoleId);
+  // Extract all role IDs from user's tenant roles
+  const userRoleIds = user.tenantRoles?.map(tr => tr.roleId).filter((id): id is number => id !== null && id !== undefined) || [];
 
-  if (hasDirectRole) {
+  // Check if user has any of the allowed roles
+  const hasRequiredRole = userRoleIds.some(roleId => allowedRoleIds.includes(roleId));
+
+  if (hasRequiredRole) {
     return <>{children}</>;
   }
 
-  // If no direct role match, redirect to default
+  // If no role match, redirect to default
   return <Navigate to={redirectTo} replace />;
 };
 

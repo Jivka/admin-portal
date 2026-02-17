@@ -2017,6 +2017,10 @@
           "roleName": {
             "type": "string",
             "nullable": true
+          },
+          "roleDisplayName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2237,8 +2241,7 @@
             "format": "email"
           },
           "password": {
-            "maxLength": 16,
-            "minLength": 6,
+            "minLength": 1,
             "type": "string"
           }
         },
@@ -2267,12 +2270,11 @@
             "type": "string",
             "nullable": true
           },
-          "roleId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "roleName": {
-            "type": "string",
+          "tenantRoles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AP.Common.Models.TenantRole"
+            },
             "nullable": true
           },
           "active": {
@@ -2281,7 +2283,7 @@
           "isVerified": {
             "type": "boolean"
           },
-          "created": {
+          "createdOn": {
             "type": "string",
             "format": "date-time"
           },
@@ -2639,6 +2641,11 @@
           "createdOn": {
             "type": "string",
             "format": "date-time"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
           }
         },
         "additionalProperties": false

@@ -24,4 +24,6 @@ public record UserOutput : IMapFrom<User>
     public bool IsVerified { get; set; }
 
     public DateTime CreatedOn { get; set; }
+
+    public string? FullName => $"{FirstName} {LastName}";
 }

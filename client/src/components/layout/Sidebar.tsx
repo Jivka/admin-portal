@@ -15,7 +15,6 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import BusinessIcon from '@mui/icons-material/Business';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonIcon from '@mui/icons-material/Person';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
 
@@ -38,9 +37,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'Tenants', icon: <BusinessIcon />, path: '/admin/tenants', roles: [SYSTEM_ADMIN] },
+  { text: 'Tenants', icon: <BusinessIcon />, path: '/tenants', roles: [SYSTEM_ADMIN, TENANT_ADMIN] },
   { text: 'Users', icon: <PeopleIcon />, path: '/admin/users', roles: [SYSTEM_ADMIN] },
-  { text: 'Tenant Profile', icon: <SettingsIcon />, path: '/tenant/profile', roles: [TENANT_ADMIN] },
   { text: 'Tenant Users', icon: <PeopleIcon />, path: '/tenant/users', roles: [TENANT_ADMIN] },
   { text: 'My Profile', icon: <PersonIcon />, path: '/profile' },
 ];
@@ -50,13 +48,15 @@ const Sidebar = ({ drawerWidth, mobileOpen, onDrawerToggle }: SidebarProps) => {
   const location = useLocation();
   const { user } = useAppSelector((state) => state.auth);
 
-  const userRoleId = user?.roleId;
+  // Extract all role IDs from user's tenant roles
+  const userRoleIds = user?.tenantRoles?.map(tr => tr.roleId).filter((id): id is number => id !== null && id !== undefined) || [];
 
-  // Filter nav items based on user role
+  // Filter nav items based on user roles
   const filteredNavItems = navItems.filter((item) => {
     if (!item.roles) return true; // No role restriction
-    if (!userRoleId) return false;
-    return item.roles.includes(userRoleId);
+    if (userRoleIds.length === 0) return false;
+    // Check if user has any of the required roles
+    return item.roles.some(requiredRole => userRoleIds.includes(requiredRole));
   });
 
   const drawerContent = (

@@ -15,12 +15,13 @@ import DashboardPage from '../features/dashboard/pages/DashboardPage';
 import ProfilePage from '../features/profile/pages/ProfilePage';
 import ChangePasswordPage from '../features/profile/pages/ChangePasswordPage';
 
+// Shared features
+import TenantsListPage from '../features/tenants/pages/TenantsListPage';
+
 // System Admin pages
-import TenantsListPage from '../features/system-admin/tenants/pages/TenantsListPage';
 import UsersListPage from '../features/system-admin/users/pages/UsersListPage';
 
 // Tenant Admin pages
-import TenantProfilePage from '../features/tenant-admin/tenant-profile/pages/TenantProfilePage';
 import TenantUsersPage from '../features/tenant-admin/tenant-users/pages/TenantUsersPage';
 
 // Role constants - these will be validated against /api/roles at runtime
@@ -79,15 +80,17 @@ export const router = createBrowserRouter([
         element: <ChangePasswordPage />,
       },
 
-      // System Admin routes
+      // Shared features (accessible by multiple roles)
       {
-        path: 'admin/tenants',
+        path: 'tenants',
         element: (
-          <RoleRoute allowedRoleIds={[SYSTEM_ADMIN]}>
+          <RoleRoute allowedRoleIds={[SYSTEM_ADMIN, TENANT_ADMIN]}>
             <TenantsListPage />
           </RoleRoute>
         ),
       },
+
+      // System Admin only routes
       {
         path: 'admin/users',
         element: (
@@ -98,14 +101,6 @@ export const router = createBrowserRouter([
       },
 
       // Tenant Admin routes
-      {
-        path: 'tenant/profile',
-        element: (
-          <RoleRoute allowedRoleIds={[SYSTEM_ADMIN, TENANT_ADMIN]}>
-            <TenantProfilePage />
-          </RoleRoute>
-        ),
-      },
       {
         path: 'tenant/users',
         element: (

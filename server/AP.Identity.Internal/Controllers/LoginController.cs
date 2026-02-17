@@ -13,7 +13,7 @@ namespace AP.Identity.Internal.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
 [Route("auth")]
-public class LoginController(IIdentityService identityService, IHttpContextAccessor httpContextAccessor) : Controller
+public class LoginController(IIdentityService identityService/*, IHttpContextAccessor httpContextAccessor*/) : Controller
 {
     private const string LoginPage = "/login";
     private const string SignInPage = "/signin";

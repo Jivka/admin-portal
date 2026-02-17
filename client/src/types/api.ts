@@ -1623,13 +1623,11 @@ export interface components {
             lastName?: string | null;
             email?: string | null;
             phone?: string | null;
-            /** Format: int32 */
-            roleId?: number;
-            roleName?: string | null;
+            tenantRoles?: components["schemas"]["AP.Common.Models.TenantRole"][] | null;
             active?: boolean;
             isVerified?: boolean;
             /** Format: date-time */
-            created?: string;
+            createdOn?: string;
             readonly fullName?: string | null;
         };
         "AP.Identity.Internal.Models.SignupRequest": {
@@ -1734,6 +1732,7 @@ export interface components {
             isVerified?: boolean;
             /** Format: date-time */
             createdOn?: string;
+            readonly fullName?: string | null;
         };
         "AP.Identity.Internal.Models.UsersResponse": {
             /** Format: int32 */

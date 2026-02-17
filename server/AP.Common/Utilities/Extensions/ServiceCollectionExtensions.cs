@@ -169,7 +169,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<ICurrentToken, CurrentToken>();
         services.AddScoped<JwtHeaderAuthenticationMiddleware, JwtHeaderAuthenticationMiddleware>();
-        services.AddScoped<JwtCookieAuthenticationMiddleware, JwtCookieAuthenticationMiddleware>();
+        ////services.AddScoped<JwtCookieAuthenticationMiddleware, JwtCookieAuthenticationMiddleware>();
         services.AddScoped<SessionAuthenticationMiddleware, SessionAuthenticationMiddleware>();
 
         return services;
