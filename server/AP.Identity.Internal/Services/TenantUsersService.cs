@@ -24,18 +24,31 @@ public class TenantUsersService(
 {
     private readonly IdentitySettings identitySettings = identitySettings.Value;
 
-    public async Task<ApiResult<UsersResponse>> GetTenantUsers(int tenantId, int? page, int? size, string? name, string? sort)
+    public async Task<ApiResult<UsersResponse>> GetTenantUsers(int currentUserId, int? tenantId, int? page, int? size, string? name, string? sort)
     {
         var searchFilter = name != null ? name.Replace(" ", "") : string.Empty;
-        var count = await dbContext.Users
-            .Where(user => user.UserTenants!.Any(ut => ut.TenantId == tenantId))
-            .CountAsync(user => (name == null || (user.FirstName + user.LastName).Contains(searchFilter)));
-        Pager.Calculate(count, page, size,/* out int? pageNum, out int? pageSize,*/ out int skipRows, out int takeRows);
 
-        var users = dbContext.Users
+        IQueryable<User> baseQuery;
+        if (tenantId.HasValue)
+        {
+            baseQuery = dbContext.Users.Where(user => user.UserTenants!.Any(ut => ut.TenantId == tenantId.Value));
+        }
+        else
+        {
+            var currentUserTenantAdminTenantIds = await dbContext.UserTenants
+                .Where(ut => ut.UserId == currentUserId && ut.RoleId == (byte)Roles.TenantAdmin)
+                .Select(ut => ut.TenantId)
+                .ToListAsync();
+            baseQuery = dbContext.Users.Where(user => user.UserTenants!.Any(ut => currentUserTenantAdminTenantIds.Contains(ut.TenantId)));
+        }
+
+        var count = await baseQuery
+            .CountAsync(user => (name == null || (user.FirstName + user.LastName).Contains(searchFilter)));
+        Pager.Calculate(count, page, size, out int skipRows, out int takeRows);
+
+        var users = baseQuery
             .Include(user => user.UserTenants)!.ThenInclude(t => t.Role)
-            .Where(user => user.UserTenants!.Any(ut => ut.TenantId == tenantId) &&
-                           (name == null || (user.FirstName + user.LastName).Contains(searchFilter)))
+            .Where(user => (name == null || (user.FirstName + user.LastName).Contains(searchFilter)))
             .OrderByDescending(x => x.UserId)
             .Skip(skipRows)
             .Take(takeRows);
@@ -51,6 +64,22 @@ public class TenantUsersService(
         };
 
         return ApiResult<UsersResponse>.SuccessWith(usersResponse);
+    }
+
+    public async Task<ApiResult<List<UserOutput>>> GetUsersByTenant(int tenantId)
+    {
+        if (!await dbContext.Tenants.AnyAsync(t => t.TenantId == tenantId))
+        {
+            return ApiResult<List<UserOutput>>.Failure(TenantNotFound, tenantId);
+        }
+
+        var users = await dbContext.Users
+            .Include(user => user.UserTenants)!.ThenInclude(t => t.Role)
+            .Where(user => user.UserTenants!.Any(ut => ut.TenantId == tenantId))
+            .Select(user => MapToDomainModel(user))
+            .ToListAsync();
+
+        return ApiResult<List<UserOutput>>.SuccessWith(users);
     }
 
     public async Task<ApiResult<UserOutput>> GetTenantUser(int tenantId, int userId)

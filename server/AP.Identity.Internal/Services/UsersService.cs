@@ -41,15 +41,22 @@ public class UsersService(
         return ApiResult<UsersResponse>.SuccessWith(response);
     }
 
-    public async Task<ApiResult<UsersResponse>> GetUsers(int? page, int? size, string? name,/* byte? roleId,*/ string? sort)
+    public async Task<ApiResult<UsersResponse>> GetUsers(int? tenantId, int? page, int? size, string? name,/* byte? roleId,*/ string? sort)
     {
         var searchFilter = name != null ? name.Replace(" ", "") : string.Empty;
 
-        var count = await dbContext.Users
+        // Build base query with optional tenant filter
+        IQueryable<User> baseQuery = dbContext.Users;
+        if (tenantId.HasValue)
+        {
+            baseQuery = baseQuery.Where(user => user.UserTenants!.Any(ut => ut.TenantId == tenantId.Value));
+        }
+
+        var count = await baseQuery
             .CountAsync(user => (name == null || (user.FirstName + user.LastName).Contains(searchFilter)));
         Pager.Calculate(count, page, size,/* out int? pageNum, out int? pageSize,*/ out int skipRows, out int takeRows);
 
-        var users = dbContext.Users
+        var users = baseQuery
             .Include(user => user.UserTenants)!.ThenInclude(t => t.Role)
             .Where(user => (name == null || (user.FirstName + user.LastName).Contains(searchFilter)))
             .OrderByDescending(x => x.UserId)
@@ -286,6 +293,7 @@ public class UsersService(
     {
         var user = await dbContext.Users
             .Include(u => u.UserTenants)!.ThenInclude(ut => ut.Role)
+            .Include(u => u.UserSessions)
             .FirstOrDefaultAsync(u => u.UserId == userId);
         if (user is null)
         {

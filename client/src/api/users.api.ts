@@ -9,6 +9,7 @@ import type {
 
 // Pagination params interface
 interface PaginationParams {
+  tenantId?: number;
   page?: number;
   size?: number;
   name?: string;
@@ -22,6 +23,7 @@ export const usersApi = {
 
   /**
    * Get paginated list of all users (System Admin only)
+   * Optionally filter by tenantId
    */
   getUsers: async (params?: PaginationParams): Promise<UsersResponse> => {
     const response = await apiClient.get<UsersResponse>('/api/users', { params });
@@ -55,7 +57,7 @@ export const usersApi = {
   /**
    * Edit user (System Admin only)
    */
-  editUser: async (data: EditUserRequest): Promise<UserOutput> => {
+  updateUser: async (data: EditUserRequest): Promise<UserOutput> => {
     const response = await apiClient.put<UserOutput>('/api/users', data);
     return response.data;
   },
@@ -84,32 +86,34 @@ export const usersApi = {
 
   /**
    * Get paginated list of tenant users (Tenant Admin only)
+   * Optionally filter by tenantId (if not provided, returns all users from admin's tenants)
    */
-  getTenantUsers: async (tenantId: number, params?: PaginationParams): Promise<UsersResponse> => {
-    const response = await apiClient.get<UsersResponse>(`/api/tenants/users/${tenantId}`, { params });
+  getTenantUsers: async (params?: PaginationParams): Promise<UsersResponse> => {
+    const response = await apiClient.get<UsersResponse>('/api/tenants/users', { params });
     return response.data;
   },
 
   /**
    * Get tenant user by ID (Tenant Admin only)
    */
-  getTenantUser: async (tenantId: number, userId: number): Promise<UserOutput> => {
-    const response = await apiClient.get<UserOutput>(`/api/tenants/users/${tenantId}/${userId}`);
+  getTenantUserById: async (userId: number, tenantId?: number): Promise<UserOutput> => {
+    const url = tenantId ? `/api/tenants/users/${tenantId}/${userId}` : `/api/tenants/users/${userId}`;
+    const response = await apiClient.get<UserOutput>(url);
     return response.data;
   },
 
   /**
    * Create tenant user (Tenant Admin only)
    */
-  createTenantUser: async (tenantId: number, data: CreateUserRequest): Promise<UserOutput> => {
-    const response = await apiClient.post<UserOutput>(`/api/tenants/users/${tenantId}`, data);
+  createTenantUser: async (data: CreateUserRequest): Promise<UserOutput> => {
+    const response = await apiClient.post<UserOutput>(`/api/tenants/users/${data.tenantId}`, data);
     return response.data;
   },
 
   /**
    * Edit tenant user (Tenant Admin only)
    */
-  editTenantUser: async (tenantId: number, data: EditUserRequest): Promise<UserOutput> => {
+  updateTenantUser: async (data: EditUserRequest, tenantId: number): Promise<UserOutput> => {
     const response = await apiClient.put<UserOutput>(`/api/tenants/users/${tenantId}`, data);
     return response.data;
   },
@@ -117,7 +121,7 @@ export const usersApi = {
   /**
    * Toggle tenant user status (Tenant Admin only)
    */
-  toggleTenantUserStatus: async (tenantId: number, userId: number, active: boolean): Promise<UserOutput> => {
+  toggleTenantUserStatus: async (userId: number, active: boolean, tenantId: number): Promise<UserOutput> => {
     const response = await apiClient.patch<UserOutput>(`/api/tenants/users/${tenantId}/${userId}`, null, {
       params: { active },
     });
@@ -127,7 +131,7 @@ export const usersApi = {
   /**
    * Delete tenant user (Tenant Admin only)
    */
-  deleteTenantUser: async (tenantId: number, userId: number): Promise<boolean> => {
+  deleteTenantUser: async (userId: number, tenantId: number): Promise<boolean> => {
     const response = await apiClient.delete<boolean>(`/api/tenants/users/${tenantId}/${userId}`);
     return response.data;
   },

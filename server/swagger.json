@@ -437,6 +437,14 @@
         ],
         "parameters": [
           {
+            "name": "tenantId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "schema": {
@@ -1122,7 +1130,7 @@
         }
       }
     },
-    "/api/tenants/users/{tenantId}": {
+    "/api/tenants/users": {
       "get": {
         "tags": [
           "[Tenant Admin] Tenants' Users"
@@ -1130,8 +1138,7 @@
         "parameters": [
           {
             "name": "tenantId",
-            "in": "path",
-            "required": true,
+            "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -1190,8 +1197,10 @@
             }
           }
         }
-      },
-      "post": {
+      }
+    },
+    "/api/tenants/users/tenantId={tenantId}": {
+      "get": {
         "tags": [
           "[Tenant Admin] Tenants' Users"
         ],
@@ -1206,99 +1215,32 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AP.Identity.Internal.Models.CreateUserRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AP.Identity.Internal.Models.CreateUserRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/AP.Identity.Internal.Models.CreateUserRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                  }
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                  }
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "[Tenant Admin] Tenants' Users"
-        ],
-        "parameters": [
-          {
-            "name": "tenantId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AP.Identity.Internal.Models.EditUserRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AP.Identity.Internal.Models.EditUserRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/AP.Identity.Internal.Models.EditUserRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                  }
                 }
               }
             }
@@ -1450,6 +1392,122 @@
               "text/json": {
                 "schema": {
                   "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tenants/users/{tenantId}": {
+      "post": {
+        "tags": [
+          "[Tenant Admin] Tenants' Users"
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AP.Identity.Internal.Models.CreateUserRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AP.Identity.Internal.Models.CreateUserRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AP.Identity.Internal.Models.CreateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "[Tenant Admin] Tenants' Users"
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AP.Identity.Internal.Models.EditUserRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AP.Identity.Internal.Models.EditUserRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AP.Identity.Internal.Models.EditUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AP.Identity.Internal.Models.UserOutput"
                 }
               }
             }

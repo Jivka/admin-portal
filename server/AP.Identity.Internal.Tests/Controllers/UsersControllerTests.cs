@@ -49,10 +49,10 @@ public class UsersControllerTests
         // Arrange
         var expectedResult = new UsersResponse { Count = 1, Users = [new() { UserId = 1, FirstName = "Test" }] };
         _systemServiceMock.Setup(s => s.IsCurrentUserSystemAdmin(_currentUserMock.Object)).ReturnsAsync(ApiResult.Success);
-        _usersServiceMock.Setup(s => s.GetUsers(It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(ApiResult<UsersResponse>.SuccessWith(expectedResult));
+        _usersServiceMock.Setup(s => s.GetUsers(It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(ApiResult<UsersResponse>.SuccessWith(expectedResult));
 
         // Act
-        var result = await _controller.GetUsers(null, null, null, null);
+        var result = await _controller.GetUsers(null, null, null, null, null);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);

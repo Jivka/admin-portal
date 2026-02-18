@@ -83,7 +83,7 @@ public class User
 
     public List<RefreshToken>? RefreshTokens { get; set; }
 
-    public List<UserSession>? Sessions { get; set; }
+    public List<UserSession>? UserSessions { get; set; }
 
     public List<UserTenant>? UserTenants { get; set; } = [];
 }

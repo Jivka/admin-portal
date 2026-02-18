@@ -26,9 +26,9 @@ public class UsersController(
         => await systemService.GetAllRoles();
 
     [HttpGet("users")]
-    public async Task<ActionResult<UsersResponse>> GetUsers(int? page, int? size, string? name,/* byte? role,*/ string? sort)
+    public async Task<ActionResult<UsersResponse>> GetUsers(int? tenantId, int? page, int? size, string? name,/* byte? role,*/ string? sort)
         => await WithSystemAdminAccess<UsersResponse>(async ()
-            => await usersService.GetUsers(page, size, name,/* role,*/ sort));
+            => await usersService.GetUsers(tenantId, page, size, name,/* role,*/ sort));
 
     [HttpGet("users/tenantId={tenantId}")]
     public async Task<ActionResult<List<UserOutput>>> GetUsersByTenant(int tenantId)

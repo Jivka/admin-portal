@@ -24,10 +24,15 @@ public class TenantUsersController(
     public async Task<List<RoleOutput>?> GetTenantRoles()
         => await systemService.GetTenantRoles();
 
-    [HttpGet("tenants/users/{tenantId}")]
-    public async Task<ActionResult<UsersResponse>> GetTenantUsers(int tenantId, int? page, int? size, string? name, string? sort)
+    [HttpGet("tenants/users")]
+    public async Task<ActionResult<UsersResponse>> GetTenantUsers(int? tenantId, int? page, int? size, string? name, string? sort)
         => await WithTenantAdminAccess<UsersResponse>(async ()
-            => await tenantUsersService.GetTenantUsers(tenantId, page, size, name, sort), tenantId);
+            => await tenantUsersService.GetTenantUsers(currentUser.UserId, tenantId, page, size, name, sort), tenantId);
+
+    [HttpGet("tenants/users/tenantId={tenantId}")]
+    public async Task<ActionResult<List<UserOutput>>> GetUsersByTenant(int tenantId)
+        => await WithTenantAdminAccess<List<UserOutput>>(async ()
+            => await tenantUsersService.GetUsersByTenant(tenantId), tenantId);
 
     [HttpGet("tenants/users/{tenantId}/{userId}")]
     public async Task<ActionResult<UserOutput>> GetTenantUser(int tenantId, int userId)
@@ -54,15 +59,19 @@ public class TenantUsersController(
     => await WithTenantAdminAccess<bool>(async ()
         => await tenantUsersService.DeleteTenantUser(tenantId, userId, currentUser.UserId), tenantId);
 
-    private async Task<ApiResult<TResult>> WithTenantAdminAccess<TResult>(Func<Task<ApiResult<TResult>>> action, int tenantId)
+    private async Task<ApiResult<TResult>> WithTenantAdminAccess<TResult>(Func<Task<ApiResult<TResult>>> action, int? tenantId)
     {
-        var hasAccess = await systemService.IsCurrentUserTenantAdmin(currentUser, tenantId);
-        if (hasAccess.Succeeded)
+        // If tenantId is provided, validate access to that specific tenant
+        if (tenantId.HasValue)
         {
-            return await action();
+            var hasAccess = await systemService.IsCurrentUserTenantAdmin(currentUser, tenantId.Value);
+            if (!hasAccess.Succeeded)
+            {
+                return ApiResult<TResult>.Failure(hasAccess.Error ?? default!);
+            }
         }
-
-        return ApiResult<TResult>.Failure(hasAccess.Error ?? default!);
+        // If no tenantId, the service will filter by user's own tenants
+        return await action();
     }
 
     private string? Origin()

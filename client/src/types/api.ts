@@ -334,6 +334,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    tenantId?: number;
                     page?: number;
                     size?: number;
                     name?: string;
@@ -840,7 +841,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/tenants/users/{tenantId}": {
+    "/api/tenants/users": {
         parameters: {
             query?: never;
             header?: never;
@@ -850,15 +851,14 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    tenantId?: number;
                     page?: number;
                     size?: number;
                     name?: string;
                     sort?: string;
                 };
                 header?: never;
-                path: {
-                    tenantId: number;
-                };
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
@@ -876,7 +876,22 @@ export interface paths {
                 };
             };
         };
-        put: {
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tenants/users/tenantId={tenantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
             parameters: {
                 query?: never;
                 header?: never;
@@ -885,13 +900,7 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["AP.Identity.Internal.Models.EditUserRequest"];
-                    "text/json": components["schemas"]["AP.Identity.Internal.Models.EditUserRequest"];
-                    "application/*+json": components["schemas"]["AP.Identity.Internal.Models.EditUserRequest"];
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description Success */
                 200: {
@@ -899,43 +908,15 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
-                        "application/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
-                        "text/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
+                        "text/plain": components["schemas"]["AP.Identity.Internal.Models.UserOutput"][];
+                        "application/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"][];
+                        "text/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"][];
                     };
                 };
             };
         };
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    tenantId: number;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["AP.Identity.Internal.Models.CreateUserRequest"];
-                    "text/json": components["schemas"]["AP.Identity.Internal.Models.CreateUserRequest"];
-                    "application/*+json": components["schemas"]["AP.Identity.Internal.Models.CreateUserRequest"];
-                };
-            };
-            responses: {
-                /** @description Success */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
-                        "application/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
-                        "text/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
-                    };
-                };
-            };
-        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1030,6 +1011,80 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/tenants/users/{tenantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    tenantId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AP.Identity.Internal.Models.EditUserRequest"];
+                    "text/json": components["schemas"]["AP.Identity.Internal.Models.EditUserRequest"];
+                    "application/*+json": components["schemas"]["AP.Identity.Internal.Models.EditUserRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
+                        "application/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
+                        "text/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
+                    };
+                };
+            };
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    tenantId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AP.Identity.Internal.Models.CreateUserRequest"];
+                    "text/json": components["schemas"]["AP.Identity.Internal.Models.CreateUserRequest"];
+                    "application/*+json": components["schemas"]["AP.Identity.Internal.Models.CreateUserRequest"];
+                };
+            };
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
+                        "application/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
+                        "text/json": components["schemas"]["AP.Identity.Internal.Models.UserOutput"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/identity/sign-up": {

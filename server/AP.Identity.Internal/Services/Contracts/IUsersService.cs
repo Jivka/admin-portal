@@ -6,7 +6,7 @@ namespace AP.Identity.Internal.Services.Contracts;
 public interface IUsersService
 {
     Task<ApiResult<UsersResponse>> GetAllUsers();
-    Task<ApiResult<UsersResponse>> GetUsers(int? page, int? size, string? name,/* byte? roleId,*/ string? sort);
+    Task<ApiResult<UsersResponse>> GetUsers(int? tenantId, int? page, int? size, string? name,/* byte? roleId,*/ string? sort);
     Task<ApiResult<List<UserOutput>>> GetUsersByTenant(int tenantId);
     Task<ApiResult<UserOutput>> GetUser(int userId);
     Task<ApiResult<UserOutput>> CreateUser(CreateUserRequest model, int currentUserId, string? origin);

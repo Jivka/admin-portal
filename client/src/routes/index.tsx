@@ -17,12 +17,7 @@ import ChangePasswordPage from '../features/profile/pages/ChangePasswordPage';
 
 // Shared features
 import TenantsListPage from '../features/tenants/pages/TenantsListPage';
-
-// System Admin pages
-import UsersListPage from '../features/system-admin/users/pages/UsersListPage';
-
-// Tenant Admin pages
-import TenantUsersPage from '../features/tenant-admin/tenant-users/pages/TenantUsersPage';
+import UsersListPage from '../features/users/pages/UsersListPage';
 
 // Role constants - these will be validated against /api/roles at runtime
 const SYSTEM_ADMIN = 1;
@@ -89,23 +84,11 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
-
-      // System Admin only routes
       {
-        path: 'admin/users',
-        element: (
-          <RoleRoute allowedRoleIds={[SYSTEM_ADMIN]}>
-            <UsersListPage />
-          </RoleRoute>
-        ),
-      },
-
-      // Tenant Admin routes
-      {
-        path: 'tenant/users',
+        path: 'users',
         element: (
           <RoleRoute allowedRoleIds={[SYSTEM_ADMIN, TENANT_ADMIN]}>
-            <TenantUsersPage />
+            <UsersListPage />
           </RoleRoute>
         ),
       },

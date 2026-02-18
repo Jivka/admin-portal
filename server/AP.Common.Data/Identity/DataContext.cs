@@ -41,7 +41,7 @@ public partial class DataContext : DbContext
                 .IsUnique()
                 .HasDatabaseName("IX_UserSessions");
 
-            b.HasOne(c => c.User).WithMany(s => s.Sessions).OnDelete(DeleteBehavior.ClientCascade);
+            b.HasOne(c => c.User).WithMany(s => s.UserSessions).OnDelete(DeleteBehavior.ClientCascade);
         });
 
         modelBuilder.Entity<Tenant>(b =>

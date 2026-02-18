@@ -38,8 +38,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
   { text: 'Tenants', icon: <BusinessIcon />, path: '/tenants', roles: [SYSTEM_ADMIN, TENANT_ADMIN] },
-  { text: 'Users', icon: <PeopleIcon />, path: '/admin/users', roles: [SYSTEM_ADMIN] },
-  { text: 'Tenant Users', icon: <PeopleIcon />, path: '/tenant/users', roles: [TENANT_ADMIN] },
+  { text: 'Users', icon: <PeopleIcon />, path: '/users', roles: [SYSTEM_ADMIN, TENANT_ADMIN] },
   { text: 'My Profile', icon: <PersonIcon />, path: '/profile' },
 ];
 
