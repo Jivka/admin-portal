@@ -294,13 +294,10 @@ const UsersListPage = () => {
                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
                       <Collapse in={expandedRow === user.userId} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 2 }}>
-                          <Typography variant="subtitle2" gutterBottom>
-                            Tenant Roles
-                          </Typography>
                           <Table size="small">
                             <TableHead>
                               <TableRow>
-                                <TableCell>Tenant ID</TableCell>
+                                <TableCell>Tenant</TableCell>
                                 <TableCell>Role</TableCell>
                               </TableRow>
                             </TableHead>
@@ -308,7 +305,7 @@ const UsersListPage = () => {
                               {user.tenantRoles && user.tenantRoles.length > 0 ? (
                                 user.tenantRoles.map((tr, idx) => (
                                   <TableRow key={idx}>
-                                    <TableCell>{tr.tenantId}</TableCell>
+                                    <TableCell>{tr.tenantName}</TableCell>
                                     <TableCell>{tr.roleDisplayName || tr.roleName}</TableCell>
                                   </TableRow>
                                 ))

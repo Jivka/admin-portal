@@ -1607,6 +1607,7 @@ export interface components {
         "AP.Common.Models.TenantRole": {
             /** Format: int32 */
             tenantId?: number | null;
+            tenantName?: string | null;
             /** Format: int32 */
             roleId?: number | null;
             roleName?: string | null;
@@ -1664,7 +1665,7 @@ export interface components {
             /** Format: int32 */
             roleId?: number;
             roleName?: string | null;
-            roleDescription?: string | null;
+            roleDisplayName?: string | null;
         };
         "AP.Identity.Internal.Models.SigninRequest": {
             /** Format: email */

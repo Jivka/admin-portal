@@ -112,7 +112,8 @@ public class IdentityService(
     public async Task<ApiResult<SigninResponse>> SignIn(SigninRequest model, string? ipAddress)
     {
         var user = await dbContext.Users
-            .Include(user => user.UserTenants)!.ThenInclude(t => t.Role)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Tenant)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Role)
             .FirstOrDefaultAsync(user => user.Email == model.Email);
 
         // validate
@@ -139,6 +140,7 @@ public class IdentityService(
             .Select(ut => new TenantRole()
             {
                 TenantId = ut.TenantId ?? default,
+                TenantName = ut.Tenant?.TenantName,
                 RoleId = ut.RoleId,
                 RoleName = ut.RoleName,
                 RoleDisplayName = ut.RoleDisplayName
@@ -176,7 +178,8 @@ public class IdentityService(
     {
         // validations
         var user = await dbContext.Users
-            .Include(user => user.UserTenants)!.ThenInclude(t => t.Role)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Tenant)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Role)
             .FirstOrDefaultAsync(u => u.Email == model.Email &&
                                  u.RefreshTokens != null &&
                                  u.RefreshTokens.Any(t => t.Token == model.RefreshToken && t.CreatedByIp == ipAddress));
@@ -455,6 +458,7 @@ public class IdentityService(
                 .Select(ut => new TenantRole()
                 {
                     TenantId = ut.TenantId ?? default,
+                    TenantName = ut.Tenant?.TenantName,
                     RoleId = ut.RoleId,
                     RoleName = ut.RoleName,
                     RoleDisplayName = ut.RoleDisplayName

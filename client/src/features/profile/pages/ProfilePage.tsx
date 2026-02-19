@@ -20,7 +20,7 @@ import { CheckCircle, Cancel } from '@mui/icons-material';
 import { useAppSelector, useAppDispatch } from '../../../store/hooks';
 import { setUser } from '../../../store/authSlice';
 import { usersApi } from '../../../api';
-import { ErrorAlert } from '../../../components/common/ErrorAlert';
+import { ErrorAlert, TenantRoleList } from '../../../components/common';
 import type { AxiosError } from 'axios';
 import type { UserOutput } from '../../../types';
 
@@ -182,24 +182,24 @@ const ProfilePage = () => {
         lastName: lastName.trim(),
         email: email.trim(),
         phone: phone.trim() || null,
-        roleId: user.roleId!,
+        roleId: user.tenantRoles?.[0]?.roleId || 0,
       });
 
       // Update local profile data
       setProfileData(updatedUser);
 
-      // Update Redux state - map UserOutput to SigninResponse
+      // Update Redux state - construct clean user object with updated values
       dispatch(setUser({
         userId: updatedUser.userId,
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
         email: updatedUser.email,
         phone: updatedUser.phone,
-        roleId: user.roleId,
-        roleName: user.roleName,
+        tenantRoles: updatedUser.tenantRoles,
         active: updatedUser.active ?? undefined,
-        isVerified: updatedUser.isVerified,
-        created: updatedUser.createdOn,
+        isVerified: updatedUser.isVerified ?? undefined,
+        createdOn: updatedUser.createdOn,
+        fullName: updatedUser.fullName,
       }));
 
       // Reset dirty flag
@@ -244,9 +244,6 @@ const ProfilePage = () => {
     );
   }
 
-  // Get role display name from profile data (with type assertion until types are regenerated)
-  const roleDisplayName = (profileData?.tenantRoles?.[0] as { roleDisplayName?: string })?.roleDisplayName || user.roleName || 'N/A';
-
   return (
     <Box>
       <Typography variant="h4" component="h1" gutterBottom>
@@ -270,13 +267,13 @@ const ProfilePage = () => {
 
         {/* Read-only Information */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Typography variant="body1">
-              <strong>Role:</strong> {roleDisplayName}
-            </Typography>
-          </Box>
+          {/* Display tenant-role assignments */}
+          <TenantRoleList 
+            tenantRoles={profileData?.tenantRoles} 
+            title="Tenant & Role Assignments"
+          />
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, mt: 2 }}>
             <Typography variant="body1">
               <strong>Status:</strong>
             </Typography>

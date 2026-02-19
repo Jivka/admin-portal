@@ -2067,6 +2067,10 @@
             "format": "int32",
             "nullable": true
           },
+          "tenantName": {
+            "type": "string",
+            "nullable": true
+          },
           "roleId": {
             "type": "integer",
             "format": "int32",
@@ -2278,7 +2282,7 @@
             "type": "string",
             "nullable": true
           },
-          "roleDescription": {
+          "roleDisplayName": {
             "type": "string",
             "nullable": true
           }

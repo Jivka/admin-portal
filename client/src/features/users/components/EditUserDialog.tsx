@@ -9,19 +9,11 @@ import {
   Box,
   CircularProgress,
   Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
 } from '@mui/material';
 import type { AxiosError } from 'axios';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { useAppDispatch } from '../../../store/hooks';
 import { updateUser } from '../../../store/usersSlice';
-import { ErrorAlert } from '../../../components/common';
+import { ErrorAlert, TenantRoleList } from '../../../components/common';
 import type { EditUserRequest, UserOutput } from '../../../types';
 
 interface EditUserDialogProps {
@@ -34,7 +26,6 @@ interface EditUserDialogProps {
 
 export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, onSuccess, user, isSystemAdmin }) => {
   const dispatch = useAppDispatch();
-  const { tenants } = useAppSelector((state) => state.tenants);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<AxiosError | null>(null);
 
@@ -104,13 +95,6 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, o
 
   const isFormValid = formData.firstName && formData.lastName && formData.email;
 
-  // Get tenant name from tenantId
-  const getTenantName = (tenantId: number | null | undefined): string => {
-    if (!tenantId) return 'N/A';
-    const tenant = tenants.find(t => t.tenantId === tenantId);
-    return tenant?.tenantName || `Tenant ${tenantId}`;
-  };
-
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <form onSubmit={handleSubmit}>
@@ -169,33 +153,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, o
             />
 
             {/* Display all tenant-role pairs */}
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                Tenant & Role Assignments
-              </Typography>
-              {user?.tenantRoles && user.tenantRoles.length > 0 ? (
-                <TableContainer component={Paper} variant="outlined">
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell><strong>Tenant</strong></TableCell>
-                        <TableCell><strong>Role</strong></TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {user.tenantRoles.map((tr, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{getTenantName(tr.tenantId)}</TableCell>
-                          <TableCell>{tr.roleDisplayName || tr.roleName || 'N/A'}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Alert severity="info">No tenant-role assignments found</Alert>
-              )}
-            </Box>
+            <TenantRoleList tenantRoles={user?.tenantRoles} />
           </Box>
         </DialogContent>
         <DialogActions>

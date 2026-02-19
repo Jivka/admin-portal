@@ -54,7 +54,7 @@ public class SystemService : ISystemService
             {
                 RoleId = role.RoleId,
                 RoleName = role.RoleName,
-                RoleDescription = role.RoleDisplayName
+                RoleDisplayName = role.RoleDisplayName
             })
             .ToListAsync();
     }

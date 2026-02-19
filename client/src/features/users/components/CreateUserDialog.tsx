@@ -193,7 +193,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
 
             <Autocomplete
               options={availableRoles}
-              getOptionLabel={(option) => option.roleDescription || option.roleName || ''}
+              getOptionLabel={(option) => option.roleDisplayName || option.roleName || ''}
               value={selectedRole}
               onChange={handleRoleChange}
               renderInput={(params) => (

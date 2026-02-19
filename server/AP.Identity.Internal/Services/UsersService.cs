@@ -30,7 +30,8 @@ public class UsersService(
     public async Task<ApiResult<UsersResponse>> GetAllUsers()
     {
         var users = dbContext.Users
-            .Include(user => user.UserTenants)!.ThenInclude(t => t.Role);
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Role)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Tenant);
 
         var response = new UsersResponse()
         {
@@ -57,7 +58,8 @@ public class UsersService(
         Pager.Calculate(count, page, size,/* out int? pageNum, out int? pageSize,*/ out int skipRows, out int takeRows);
 
         var users = baseQuery
-            .Include(user => user.UserTenants)!.ThenInclude(t => t.Role)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Tenant)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Role)
             .Where(user => (name == null || (user.FirstName + user.LastName).Contains(searchFilter)))
             .OrderByDescending(x => x.UserId)
             .Skip(skipRows)
@@ -84,7 +86,8 @@ public class UsersService(
         }
 
         var users = await dbContext.Users
-            .Include(user => user.UserTenants)!.ThenInclude(t => t.Role)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Tenant)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Role)
             .Where(user => user.UserTenants!.Any(ut => ut.TenantId == tenantId))
             .Select(user => MapToDomainModel(user))
             .ToListAsync();
@@ -95,7 +98,8 @@ public class UsersService(
     public async Task<ApiResult<UserOutput>> GetUser(int userId)
     {
         var user = await dbContext.Users
-            .Include(user => user.UserTenants)!.ThenInclude(t => t.Role)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Tenant)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Role)
             .FirstOrDefaultAsync(user => user.UserId == userId);
         if (user == null)
         {
@@ -155,7 +159,8 @@ public class UsersService(
         var errors = new List<ApiError>();
 
         var user = await dbContext.Users
-            .Include(user => user.UserTenants)!.ThenInclude(t => t.Role)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Tenant)
+            .Include(user => user.UserTenants)!.ThenInclude(ut => ut.Role)
             .FirstOrDefaultAsync(user => user.UserId == model.UserId);
         if (user is null)
         {
@@ -328,6 +333,7 @@ public class UsersService(
                 .Select(ut => new TenantRole()
                 {
                     TenantId = ut.TenantId ?? default,
+                    TenantName = ut.Tenant?.TenantName,
                     RoleId = ut.RoleId,
                     RoleName = ut.RoleName,
                     RoleDisplayName = ut.RoleDisplayName

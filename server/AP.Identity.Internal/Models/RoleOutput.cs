@@ -9,5 +9,5 @@ public record RoleOutput : IMapFrom<Role>
 
     public string? RoleName { get; set; }
 
-    public string? RoleDescription { get; set; }
+    public string? RoleDisplayName { get; set; }
 }
