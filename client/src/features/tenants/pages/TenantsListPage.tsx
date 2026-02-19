@@ -179,8 +179,8 @@ const TenantsListPage = () => {
               <TableCell>BIC</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Ownership</TableCell>
-              <TableCell>Domain</TableCell>
               <TableCell>Active</TableCell>
+              <TableCell>Created On</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -224,7 +224,6 @@ const TenantsListPage = () => {
                     <TableCell>
                       <Chip label={getOwnershipLabel(tenant.ownership)} size="small" variant="outlined" />
                     </TableCell>
-                    <TableCell>{tenant.domain || '-'}</TableCell>
                     <TableCell>
                       <Switch
                         checked={tenant.active || false}
@@ -232,6 +231,9 @@ const TenantsListPage = () => {
                         disabled={!isSystemAdmin}
                         size="small"
                       />
+                    </TableCell>
+                    <TableCell>
+                      {tenant.createdOn ? new Date(tenant.createdOn).toLocaleString() : '-'}
                     </TableCell>
                     <TableCell align="right">
                       <IconButton size="small" aria-label="edit" onClick={() => handleOpenEditDialog(tenant)}>

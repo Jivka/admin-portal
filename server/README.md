@@ -10,13 +10,14 @@ The AP solution is a multi-tenant admin portal system that provides robust ident
 
 - **.NET 9.0** - Latest .NET framework
 - **ASP.NET Core Razor Pages** - Web UI framework
+- **ASP.NET Core Web API** - RESTful API endpoints
 - **Entity Framework Core** - ORM with SQL Server provider
-- **JWT Authentication** - Token-based authentication with cookie storage
-- **Cookie Authentication** - Secure HTTP-only cookies for web and API
-- **BCrypt.Net** - Password hashing
+- **Session-Based Authentication** - Secure server-side JWT storage
+- **JWT Bearer Authentication** - Token validation and authorization
+- **BCrypt.Net** - Password hashing with salt
 - **AutoMapper** - Object-to-object mapping
-- **Serilog** - Structured logging
-- **Swagger/OpenAPI** - API documentation
+- **Serilog** - Structured logging with file and Application Insights sinks
+- **Swagger/OpenAPI** - Interactive API documentation with session auth
 - **xUnit** - Unit testing framework
 - **Moq** - Mocking framework for tests
 - **MassTransit** - Message-based communication
@@ -166,20 +167,27 @@ The AP solution is a multi-tenant admin portal system that provides robust ident
    ```
 
 2. **Identity Settings**:
-Configure authentication settings:
+Configure authentication settings in `appsettings.json`:
 ```json
 "IdentitySettings": {
-  "Secret": "your-jwt-secret-key",
+  "Secret": "your-secure-jwt-secret-key-min-32-chars",
   "EmailDomain": "@yourdomain.com",
-  "MinPasswordLength": 6,
+  "MinPasswordLength": 8,
   "MaxPasswordLength": 16,
-  "JwtTokenTTE": 1,        // JWT access token expiration in days (also used for cookie expiration)
-  "RefreshTokenTTE": 7     // Refresh token expiration in days
+  "PasswordSpecialCharacters": "!@#$%^&*",
+  "InitialPassword": "TempPassword123!",
+  "JwtTokenTTE": 1,         // JWT access token expiration in days
+  "RefreshTokenTTE": 7,     // Refresh token expiration in days
+  "RefreshTokenTTL": 2,     // Refresh token time-to-live in minutes
+  "ResetTokenTTE": 1        // Password reset token expiration in days
 }
 ```
    
-**Note**: The `JwtTokenTTE` value determines how long the authentication cookie remains valid. 
-The `RefreshTokenTTE` determines the refresh token cookie expiration.
+**Important Notes**:
+- `JwtTokenTTE`: Access token lifetime (stored in UserSession)
+- `RefreshTokenTTE`: Session cookie expiration duration
+- `Secret`: Must be at least 32 characters for HS256 algorithm
+- Keep `Secret` in User Secrets (dev) or Azure Key Vault (production)
 
 3. **Email Settings**:
    Configure SMTP settings for email functionality:
@@ -198,16 +206,34 @@ The `RefreshTokenTTE` determines the refresh token cookie expiration.
 1. **Restore Dependencies**:
    ```bash
    dotnet restore
-   ```
-
-2. **Apply Database Migrations**:
+   
+   Or from the Platform project:
    ```bash
-   cd AP.Common.Data
-   dotnet ef database update --startup-project ../AP.Platform
+   cd AP.Platform
+   dotnet ef database update --project ../AP.Common.Data
    ```
 
 3. **Run the Application**:
    ```bash
+   cd AP.Platform
+   dotnet run
+   ```
+   
+   Or with specific environment:
+   ```bash
+   dotnet run -e "Local"
+   ```
+
+4. **Access the Application**:
+   - API: `https://localhost:5001`
+   - Swagger UI: `https://localhost:5001/swagger`
+   - Alternative HTTPS: `https://localhost:7292`
+
+5. **Generate Swagger JSON** (for frontend type generation):
+   ```bash
+   # Access while app is running
+   curl https://localhost:5001/swagger/v1/swagger.json -o swagger.json
+   ``
    cd AP.Platform
    dotnet run
    ```

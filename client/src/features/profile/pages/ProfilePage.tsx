@@ -262,7 +262,9 @@ const ProfilePage = () => {
 
       <Paper sx={{ p: 3, mt: 2 }}>
         <Typography variant="h6" gutterBottom>
-          User Information
+          {profileData?.fullName || `${profileData?.firstName || ''} ${profileData?.lastName || ''}`.trim() || user.fullName || 'User'}
+          &nbsp;
+          <i>{profileData?.email ?? user.email}</i>
         </Typography>
 
         {/* Read-only Information */}
@@ -294,6 +296,15 @@ const ProfilePage = () => {
               size="small"
               icon={(profileData?.isVerified ?? user.isVerified) ? <CheckCircle /> : <Cancel />}
             />
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, mt: 1 }}>
+            <Typography variant="body1">
+              <strong>Created On:</strong>
+            </Typography>
+            <Typography variant="body2">
+              {profileData?.createdOn ? new Date(profileData.createdOn).toLocaleString() : '-'}
+            </Typography>
           </Box>
         </Box>
 
