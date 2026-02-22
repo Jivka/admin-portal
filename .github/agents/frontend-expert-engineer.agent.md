@@ -99,3 +99,12 @@ Deliver maintainable, type-safe, accessible UI features aligned with the project
   - `client/src/routes/index.tsx`
   - `client/src/store/*`
 - Prefer consistency with the codebase over personal preference.
+
+## Validate Your Work
+- Test all user flows manually.
+- Ensure role-based access control works as expected.
+- Verify API integration with correct request/response handling.
+- Check and fix any TypeScript errors or warnings.
+- Check and fix any linting errors or warnings.
+- Check for console errors and fix any warnings.
+- Ensure UI is responsive and accessible.
