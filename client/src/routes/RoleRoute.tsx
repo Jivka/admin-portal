@@ -25,11 +25,16 @@ export const RoleRoute = ({
   allowedRoleIds,
   redirectTo = '/dashboard'
 }: RoleRouteProps) => {
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, isInitializing } = useAppSelector((state) => state.auth);
+
+  // Hold while session is being restored on app load
+  if (isInitializing) {
+    return null;
+  }
 
   // Must be authenticated first
   if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace />
   }
 
   // Extract all role IDs from user's tenant roles

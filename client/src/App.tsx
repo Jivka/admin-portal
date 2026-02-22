@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { ThemeProvider, CssBaseline, createTheme } from '@mui/material';
 import { router } from './routes';
+import { useAppDispatch } from './store/hooks';
+import { initAuth } from './store/authSlice';
 
 // Create default MUI theme (can be customized later)
 const theme = createTheme({
@@ -19,6 +22,13 @@ const theme = createTheme({
 });
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  // Restore auth state from existing SessionId cookie on every app load / page reload
+  useEffect(() => {
+    dispatch(initAuth());
+  }, [dispatch]);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

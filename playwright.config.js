@@ -1,13 +1,33 @@
 // @ts-check
 import { defineConfig, devices } from '@playwright/test';
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const require = createRequire(import.meta.url);
+// Loaded via require() to keep JS type-checking happy in this repo setup.
+const dotenv = require('dotenv');
+
+// Load optional local env files for E2E.
+// - .env is generic local config
+// - .env.e2e is for Playwright credentials and overrides .env
+const envPath = path.resolve(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+}
+
+const e2eEnvPath = path.resolve(__dirname, '.env.e2e');
+if (fs.existsSync(e2eEnvPath)) {
+  dotenv.config({ path: e2eEnvPath, override: true });
+}
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -27,7 +47,14 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
+
+    /* Local dev uses self-signed certs (Vite + backend). */
+    ignoreHTTPSErrors: true,
+
+    /* Helpful artifacts for debugging failures. */
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',

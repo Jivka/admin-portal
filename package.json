@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "description": "A full-stack multi-tenant admin portal for identity and user management with session-based authentication.",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "dev": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "lint": "npm --prefix client run lint",
+    "generate-types": "npm --prefix client run generate-types",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Jivka/admin-portal.git"
@@ -11,13 +18,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/Jivka/admin-portal/issues"
   },
   "homepage": "https://github.com/Jivka/admin-portal#readme",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
-    "@types/node": "^25.3.0"
+    "@types/node": "^25.3.0",
+    "dotenv": "^17.2.1"
   }
 }

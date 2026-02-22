@@ -8,6 +8,7 @@ interface AuthState {
   user: SigninResponse | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitializing: boolean;
   error: string | null;
 }
 
@@ -16,6 +17,7 @@ const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  isInitializing: true,
   error: null,
 };
 
@@ -102,6 +104,22 @@ export const refreshToken = createAsyncThunk(
   }
 );
 
+/**
+ * Called once on app startup to restore auth state from an existing SessionId cookie.
+ * Silently succeeds or fails – never throws.
+ */
+export const initAuth = createAsyncThunk(
+  'auth/initAuth',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authApi.refreshToken();
+      return response;
+    } catch {
+      return rejectWithValue(null);
+    }
+  }
+);
+
 // Auth slice
 const authSlice = createSlice({
   name: 'auth',
@@ -174,6 +192,22 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.error = action.payload as string;
+      });
+
+    // Init Auth (session restore on app load)
+    builder
+      .addCase(initAuth.pending, (state) => {
+        state.isInitializing = true;
+      })
+      .addCase(initAuth.fulfilled, (state, action) => {
+        state.isInitializing = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(initAuth.rejected, (state) => {
+        state.isInitializing = false;
+        // No valid session – user stays unauthenticated
       });
   },
 });

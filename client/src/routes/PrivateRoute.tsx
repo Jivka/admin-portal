@@ -11,12 +11,12 @@ interface PrivateRouteProps {
  * Redirects to /login if user is not authenticated
  */
 export const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, isLoading, isInitializing } = useAppSelector((state) => state.auth);
   const location = useLocation();
 
-  // Show nothing while checking auth status
-  if (isLoading) {
-    return null; // Or a loading spinner
+  // Show nothing while the session check or auth operation is in progress
+  if (isInitializing || isLoading) {
+    return null;
   }
 
   if (!isAuthenticated) {

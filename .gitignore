@@ -120,6 +120,12 @@ ipch/
 # Visual Studio Trace Files
 *.e2e
 
+# Environment files (local secrets)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
 # TFS 2012 Local Workspace
 $tf/
 
