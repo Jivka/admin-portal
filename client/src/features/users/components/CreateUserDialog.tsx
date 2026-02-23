@@ -123,9 +123,9 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
   const isFormValid = formData.firstName && formData.lastName && formData.email && formData.roleId && formData.tenantId;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth aria-labelledby="create-user-dialog-title">
       <form onSubmit={handleSubmit}>
-        <DialogTitle>Add New User</DialogTitle>
+        <DialogTitle id="create-user-dialog-title">Add New User</DialogTitle>
         <DialogContent>
           {error && (
             <Box sx={{ mb: 2 }}>
@@ -145,6 +145,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
               value={formData.firstName}
               onChange={handleChange('firstName')}
               disabled={isLoading}
+              autoComplete="given-name"
               inputProps={{ maxLength: 128 }}
             />
 
@@ -155,6 +156,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
               value={formData.lastName}
               onChange={handleChange('lastName')}
               disabled={isLoading}
+              autoComplete="family-name"
               inputProps={{ maxLength: 128 }}
             />
 
@@ -166,6 +168,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
               value={formData.email}
               onChange={handleChange('email')}
               disabled={isLoading}
+              autoComplete="email"
               inputProps={{ maxLength: 256 }}
             />
 
@@ -176,6 +179,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
               value={formData.phone}
               onChange={handleChange('phone')}
               disabled={isLoading}
+              autoComplete="tel"
               inputProps={{ maxLength: 32 }}
             />
 
@@ -209,7 +213,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClos
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={isLoading || !isFormValid}>
-            {isLoading ? <CircularProgress size={24} /> : 'Create User'}
+            {isLoading ? <CircularProgress size={24} aria-label="Creating user" /> : 'Create User'}
           </Button>
         </DialogActions>
       </form>

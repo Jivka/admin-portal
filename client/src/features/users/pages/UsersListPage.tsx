@@ -215,24 +215,24 @@ const UsersListPage = () => {
       </Paper>
 
       <TableContainer component={Paper}>
-        <Table>
+        <Table aria-label="Users list">
           <TableHead>
             <TableRow>
-              <TableCell width={50} />
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Verified</TableCell>
-              <TableCell>Active</TableCell>
-              <TableCell>Created On</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell width={50} scope="col" aria-label="Row details" />
+              <TableCell scope="col">Name</TableCell>
+              <TableCell scope="col">Email</TableCell>
+              <TableCell scope="col">Phone</TableCell>
+              <TableCell scope="col">Verified</TableCell>
+              <TableCell scope="col">Active</TableCell>
+              <TableCell scope="col">Created On</TableCell>
+              <TableCell scope="col" align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                  <CircularProgress />
+                  <CircularProgress aria-label="Loading users" />
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
@@ -251,7 +251,9 @@ const UsersListPage = () => {
                       <IconButton
                         size="small"
                         onClick={() => handleExpandClick(user.userId)}
-                        aria-label="expand row"
+                        aria-label={`${expandedRow === user.userId ? 'Collapse' : 'Expand'} details for ${user.fullName || `${user.firstName} ${user.lastName}`}`}
+                        aria-expanded={expandedRow === user.userId}
+                        aria-controls={`user-details-${user.userId}`}
                       >
                         {expandedRow === user.userId ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                       </IconButton>
@@ -276,29 +278,30 @@ const UsersListPage = () => {
                         onChange={() => handleStatusToggle(user)}
                         disabled={!isSystemAdmin}
                         size="small"
+                        inputProps={{ 'aria-label': `${user.active ? 'Deactivate' : 'Activate'} ${user.fullName || user.email}` }}
                       />
                     </TableCell>
                     <TableCell>
                       {user.createdOn ? new Date(user.createdOn).toLocaleString() : '-'}
                     </TableCell>
                     <TableCell align="right">
-                      <IconButton size="small" aria-label="edit" onClick={() => handleOpenEditDialog(user)}>
+                      <IconButton size="small" aria-label={`Edit user ${user.fullName || user.email}`} onClick={() => handleOpenEditDialog(user)}>
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      <IconButton size="small" aria-label="delete" onClick={() => handleOpenDeleteDialog(user)}>
+                      <IconButton size="small" aria-label={`Delete user ${user.fullName || user.email}`} onClick={() => handleOpenDeleteDialog(user)}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
+                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8} id={`user-details-${user.userId}`}>
                       <Collapse in={expandedRow === user.userId} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 2 }}>
-                          <Table size="small">
+                          <Table size="small" aria-label={`Tenant roles for ${user.fullName || `${user.firstName} ${user.lastName}`}`}>
                             <TableHead>
                               <TableRow>
-                                <TableCell>Tenant</TableCell>
-                                <TableCell>Role</TableCell>
+                                <TableCell scope="col">Tenant</TableCell>
+                                <TableCell scope="col">Role</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
@@ -376,7 +379,12 @@ const UsersListPage = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+          role={snackbar.severity === 'success' ? 'status' : 'alert'}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

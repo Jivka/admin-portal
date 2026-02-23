@@ -96,9 +96,9 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, o
   const isFormValid = formData.firstName && formData.lastName && formData.email;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth aria-labelledby="edit-user-dialog-title">
       <form onSubmit={handleSubmit}>
-        <DialogTitle>Edit User</DialogTitle>
+        <DialogTitle id="edit-user-dialog-title">Edit User</DialogTitle>
         <DialogContent>
           {error && (
             <Box sx={{ mb: 2 }}>
@@ -118,6 +118,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, o
               value={formData.firstName}
               onChange={handleChange('firstName')}
               disabled={isLoading}
+              autoComplete="given-name"
               inputProps={{ maxLength: 128 }}
             />
 
@@ -128,6 +129,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, o
               value={formData.lastName}
               onChange={handleChange('lastName')}
               disabled={isLoading}
+              autoComplete="family-name"
               inputProps={{ maxLength: 128 }}
             />
 
@@ -139,6 +141,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, o
               value={formData.email}
               onChange={handleChange('email')}
               disabled={isLoading}
+              autoComplete="email"
               inputProps={{ maxLength: 256 }}
             />
 
@@ -149,6 +152,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, o
               value={formData.phone}
               onChange={handleChange('phone')}
               disabled={isLoading}
+              autoComplete="tel"
               inputProps={{ maxLength: 32 }}
             />
 
@@ -161,7 +165,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, onClose, o
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={isLoading || !isFormValid}>
-            {isLoading ? <CircularProgress size={24} /> : 'Update User'}
+            {isLoading ? <CircularProgress size={24} aria-label="Updating user" /> : 'Update User'}
           </Button>
         </DialogActions>
       </form>

@@ -67,15 +67,15 @@ export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> =
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth aria-labelledby="delete-user-dialog-title" aria-describedby="delete-user-dialog-description">
+      <DialogTitle id="delete-user-dialog-title">
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberIcon color="warning" />
+          <WarningAmberIcon color="warning" aria-hidden="true" />
           Confirm Delete User
         </Box>
       </DialogTitle>
       <DialogContent>
-        <DialogContentText>
+        <DialogContentText id="delete-user-dialog-description">
           Are you sure you want to delete user <strong>{user?.fullName || user?.email}</strong>?
         </DialogContentText>
         <DialogContentText sx={{ mt: 1, color: 'text.secondary', fontSize: '0.875rem' }}>
@@ -102,7 +102,7 @@ export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> =
           color="error"
           disabled={isLoading}
         >
-          {isLoading ? <CircularProgress size={24} /> : 'Delete User'}
+          {isLoading ? <CircularProgress size={24} aria-label="Deleting user" /> : 'Delete User'}
         </Button>
       </DialogActions>
     </Dialog>
