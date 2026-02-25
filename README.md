@@ -79,7 +79,7 @@ admin-portal/
 - Visual Studio 2022, Rider, or VS Code with C# extension
 
 **Frontend**:
-- Node.js 18.x or later
+- Node.js 24.x LTS or later
 - npm or yarn
 
 ### Installation & Setup

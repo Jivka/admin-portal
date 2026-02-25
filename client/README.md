@@ -57,7 +57,7 @@ src/
 
 ### Prerequisites
 
-- **Node.js** 18.x or later
+- **Node.js** 24.x LTS or later
 - **npm** or **yarn**
 - Backend API running (see `/server/README.md`)
 
